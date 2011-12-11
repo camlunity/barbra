@@ -9,3 +9,4 @@ module Q =
 
 
 let version = 1
+and base_dir = "_dep"

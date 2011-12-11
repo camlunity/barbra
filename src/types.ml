@@ -34,15 +34,14 @@ let string_of_dbel (name, wher) = match wher with
 
 type ('a, 'e) res = ('a, 'e) Res.res
 
-(* исправьте это: *)
-type source =
-  < fetch : dest_source_dir:string -> (unit, exn) res
-    (* метод fetch должен скачать и распаковать нужную зависимость
-       в директорию _dep/имя_зависимости и вернуть () в случае успеха
-       либо исключение в случае ошибки.
-     *)
-  >
 
-type install =
-  < install : path:string -> (unit, exn) res
-  >
+class type source_type = object
+  method fetch : dest_dir:string -> (unit, exn) res
+  (** Fetches package source to [dest_dir], which is located in
+      [Barbra.base_dir]. *)
+end
+
+class type install_type = object
+  method install : source_dir:string -> (unit, exn) res
+  (** Installs packages, located in [source_dir]. *)
+end
