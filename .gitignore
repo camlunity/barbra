@@ -1,8 +1,6 @@
 _build
 *.native
 *.byte
+*.bak
 setup.data
 setup.log
-setup.ml.bak
-_tags.bak
-myocamlbuild.ml.bak
