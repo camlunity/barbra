@@ -241,3 +241,43 @@ value repeat n f a =
       | `Error e -> `Error (e, made)
       ]
 ;
+
+
+module Sys
+ =
+  struct
+
+    include Sys;
+
+    exception Command_failed of
+      (string * [= `Error_code of int | `Exn of exn ])
+    ;
+
+    value () = Printexc.register_printer (fun
+      [ Command_failed (cmd, e) ->
+          Some (Printf.sprintf "command \"%s\" failed with %s"
+            cmd
+            (match e with
+             [ `Error_code e ->
+                  Printf.sprintf "error code %i" e
+             | `Exn e ->
+                  Printf.sprintf "exception: %s" (Printexc.to_string e)
+             ]))
+      | _ -> None
+      ])
+    ;
+
+    value command_ok
+     : string -> res unit exn
+     = fun cmd ->
+         try
+           let c = Sys.command cmd in
+           if c = 0
+           then return ()
+           else error (Command_failed cmd (`Error_code c))
+         with
+         [ e -> error (Command_failed cmd (`Exn e)) ]
+    ;
+
+  end
+;
