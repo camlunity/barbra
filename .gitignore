@@ -1,0 +1,8 @@
+_build
+*.native
+*.byte
+setup.data
+setup.log
+setup.ml.bak
+_tags.bak
+myocamlbuild.ml.bak
