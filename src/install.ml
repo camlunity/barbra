@@ -7,7 +7,7 @@ let makefile : install_type = object
     let open Res in
       WithRes.bindres WithRes.with_sys_chdir source_dir
       (fun _old_path ->
-
-        return ()
+         let command fmt = Printf.ksprintf Sys.command_ok fmt in
+         command "%s" "./configure"
       )
 end

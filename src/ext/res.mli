@@ -131,3 +131,13 @@ value list_iter_all :
 (* error contains: (the_occured_error, count_of_repeats_made) *)
 value repeat : int -> ( 'a -> res 'a 'e ) -> 'a -> res 'a ('e * int)
 ;
+
+
+module Sys
+ :
+  sig
+    value command_ok
+     : string -> res unit exn
+    ;
+  end
+;
