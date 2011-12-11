@@ -17,3 +17,5 @@
 "src": include
 # Executable brb
 # OASIS_STOP
+
+<**/*.ml{,i}> : warn_A

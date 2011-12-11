@@ -1,3 +1,4 @@
+open Common
 
 type archive_type = TarGz | TarBzip2
 
@@ -20,4 +21,4 @@ let string_of_vcs_type = function
 
 let vcs_type_of_string s = match String.lowercase s with
   | "git" -> Git | "svn" -> Svn | "hg" -> Mercurial | "bzr" -> Bazaar
-  | _ -> assert false
+  | _ -> failwith "unknown VCS type %S" s
