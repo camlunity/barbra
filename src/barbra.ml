@@ -19,8 +19,11 @@ let install_from conf =
         | _ -> failwith "unfetchable type for %S" pkg
       and dest_dir = Filename.concat base_dir pkg in
 
-      makedirs dest_dir;
-      ignore & source#fetch ~dest_dir
+      if source#is_available () then (
+        makedirs dest_dir;
+        ignore & source#fetch ~dest_dir
+      ) else
+        failwith "fixme: how to report this?"
     )
     (Config.parse_config conf)
 

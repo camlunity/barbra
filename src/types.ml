@@ -35,9 +35,9 @@ type ('a, 'e) res = ('a, 'e) Res.res
 
 
 class type source_type = object
-  val is_available : bool
-  (** Is [true] if this source type handler is available for use,
-      i. e. all the required binaries are installed and [false]
+  method is_available : unit -> bool
+  (** Returns [true] if this source type handler is available for
+      use, i. e. all the required binaries are installed and [false]
       otherwise. *)
 
   method fetch : dest_dir:string -> (unit, exn) res
