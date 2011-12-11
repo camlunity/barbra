@@ -1,6 +1,6 @@
 _build
 *.native
 *.byte
-*.bak
+*.ba*
 setup.data
 setup.log
