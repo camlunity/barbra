@@ -18,7 +18,7 @@ Executable brb
 
 Library barbra
   Path:       src
-  Modules:    Barbra
+  Modules:    Barbra, Source, Install
 
 SourceRepository github
   Type:     git

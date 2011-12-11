@@ -1,5 +1,4 @@
 open Printf
-
 open Common
 
 type archive_type = TarGz | TarBzip2 | Tar
@@ -36,6 +35,11 @@ type ('a, 'e) res = ('a, 'e) Res.res
 
 
 class type source_type = object
+  val is_available : bool
+  (** Is [true] if this source type handler is available for use,
+      i. e. all the required binaries are installed and [false]
+      otherwise. *)
+
   method fetch : dest_dir:string -> (unit, exn) res
   (** Fetches package source to [dest_dir], which is located in
       [Barbra.base_dir]. *)

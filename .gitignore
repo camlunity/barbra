@@ -1,4 +1,5 @@
 _build
+_dep
 *.native
 *.byte
 *.ba*

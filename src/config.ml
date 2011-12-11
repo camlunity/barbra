@@ -14,6 +14,7 @@ let parse_line_opt s =
         match String.lowercase typ with
           | "local"       -> (name,Local)
           | "http-tar-gz" -> (name,HttpArchive (src,TarGz))
+          | "http-tar-bz2" -> (name,HttpArchive (src,TarBzip2))
           | "fs-tar"      -> (name,FsArchive   (src,Tar))
           | "svn" | "hg"
           | "git" | "bzr" -> (name,VCS (src,vcs_type_of_string typ) )

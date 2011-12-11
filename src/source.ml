@@ -1,31 +1,23 @@
-(* на данный момент не используется:
+open Types
 
 
-(** Способы получения пакетов *)
+class http_archive (HttpArchive (uri, archive_type)) : source_type = object
+  val is_available = true
 
-module type SOURCE =
-  sig
-    (** Проверяет, доступен ли данный способ получения на машине.
-        Смотрит на наличие бинарников в путях, в основном.
-    *)
-    val is_available : unit -> bool
+  method fetch ~dest_dir =
+    let fn = Filename.basename uri in
+    let archive_cmd = match archive_type with
+      | Tar -> "tar -xf "
+      | TarGz -> "tar -zxf"
+      | TarBzip2 -> "tar -jxf"
+    in
 
-    (**
-        Проверяет соответствие переданного урла формату,
-        необходимого методу получения.
-    *)
-    val validate : string -> bool
-
-    (** Достаёт, по переданному урлу зависимый модуль и кладёт его
-        в _dep/src/<dep_name>.
-        Возвращает полный путь до распакованного проекта
-        FIXME: нужно ли возвращать?
-        FIXME: что в случае неудачи? ексепшн? манатки?
-    *)
-    val fetch : string -> (* dep_name *)
-                string -> (* url *)
-                string option
-
-  end
-
-*)
+    let open WithM in
+    let open Res in
+      WithRes.bindres WithRes.with_sys_chdir dest_dir
+      (fun _old_path ->
+         let command fmt = Printf.ksprintf Sys.command_ok fmt in
+         command "wget --no-check-certificate %s -O %s" uri fn >>= fun () ->
+         command "%s %s" archive_cmd fn
+      )
+end
