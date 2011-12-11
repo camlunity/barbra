@@ -6,16 +6,32 @@ Authors:     camlunity
 License:     MIT
 Plugins:     META (0.2), StdFiles (0.2), DevFiles (0.2)
 
+BuildTools: ocamlbuild
+
+Flag tests
+  Description: Build tests
+  Default: true
+
 Executable brb
-  Path:         bin
-  BuildTools:   ocamlbuild
-  MainIs:       brb.ml
+  Path:       bin
+  MainIs:     brb.ml
 
 Library barbra
   Path:       src
-  BuildTools: ocamlbuild
   Modules:    Barbra
 
 SourceRepository github
   Type:     git
   Location: git://github.com/camlunity/barbra.git
+
+Executable test
+  Build$:          flag(tests)
+  Install$:        flag(tests)
+  Path: tests/
+  Install: false
+  CompiledObject: best
+  MainIs: test.ml
+
+Test main
+  Command: $test
+  TestTools: test

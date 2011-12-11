@@ -1,4 +1,5 @@
-open Printf
+
+open Common
 open Types
 
 
@@ -10,28 +11,34 @@ let read_all_lines ch =
   with End_of_file ->
     List.rev !lines
 
-let parse_config filename =
-  let h = open_in filename in
+
+let parse lines =
   let ans = ref [] in
   let add item = ans := item :: !ans in
-  let lines = read_all_lines h in
-  close_in h;
-
   List.iter (fun s ->
     if String.length s > 0 then
       try
         Scanf.sscanf s "dep %s %s %s" (fun name typ src ->
           match String.lowercase typ with
             | "local"       -> add (name,Local)
-            | "http-tar"    -> add (name,HttpArchive (src,TarGz))
-            | "fs-ar"       -> add (name,FsArchive   (src,TarGz))
+            | "http-tar-gz"    -> add (name,HttpArchive (src,TarGz))
+            | "fs-tar"       -> add (name,FsArchive   (src,Tar))
             | "svn" | "hg"
             | "git" | "bzr" -> add (name,VCS (src,vcs_type_of_string typ) )
             | "fs-src"      -> add (name,FsSrc src)
-            | _             -> print_endline "bad line"
+            | _             -> print_endline "unsupported delivery method"
         )
       with
           End_of_file -> ()
   ) lines;
   List.rev !ans
-;;
+
+
+let parse_config filename =
+  let lines = with_file_in filename read_all_lines in
+  parse lines
+
+
+let parse_string st =
+  let lines = String.nsplit st "\n" in
+  parse lines

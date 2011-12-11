@@ -3,7 +3,6 @@ dep b1     Hg mmmmmmmm
 dep b2     Bzr iiiiiiiiiiiiiiiiiii
 dep b3     Svn sssssssssssssssss
 dep a0 local
-dep a1     http-tar http:///asdfasfdas/asdfas.tar.gz
-dep a2     fs-ar    ~/asdfa.tar
-dep a3     fs-src   ~/prog/asdfas 
-
+dep a1     http-tar-gz http:///asdfasfdas/asdfas.tar.gz
+dep a2     fs-tar    ~/asdfa.tar
+dep a3     fs-src   ~/prog/asdfas
