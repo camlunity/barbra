@@ -21,4 +21,4 @@
 <**/*.ml{,i}> : warn_A
 
 "src/ext" : include
-<src/ext/res.ml{,i}> : camlp4r
+<src/ext/res.ml{,i}> | <src/ext/withM.ml{,i}> : camlp4r

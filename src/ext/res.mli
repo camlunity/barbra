@@ -4,13 +4,22 @@ type res 'a 'e =
   ]
 ;
 
+type m 'a = res 'a exn
+;
+
 value return : 'a -> res 'a 'e
 ;
 
 value fail : 'e -> res 'a 'e
 ;
 
+value error : exn -> res 'a exn
+;
+
 value bind : ('a -> res 'b 'e) -> res 'a 'e -> res 'b 'e
+;
+
+value bind_rev : res 'a 'e -> ('a -> res 'b 'e) -> res 'b 'e
 ;
 
 value ( >>= ) : res 'a 'e -> ('a -> res 'b 'e) -> res 'b 'e

@@ -4,10 +4,16 @@ type res 'a 'e =
   ]
 ;
 
+type m 'a = res 'a exn
+;
+
 value return r = `Ok r
 ;
 
 value fail e = `Error e
+;
+
+value error e = `Error e
 ;
 
 value bind f m =
@@ -17,7 +23,11 @@ value bind f m =
   ]
 ;
 
+
 value ( >>= ) m f = bind f m
+;
+
+value bind_rev = ( >>= )
 ;
 
 

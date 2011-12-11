@@ -3,7 +3,19 @@ open Types
 
 
 let install
- : source -> (unit, exn) res
- = fun source ->
+ : install
+ = object
 
-     ignore (source#fetch ~dest_source_dir:"asd"); raise Exit
+     method install ~path =
+
+       let open WithM in
+       let open Res in
+
+       WithRes.bindres WithRes.with_sys_chdir path
+         (fun _old_path ->
+
+            return ()
+
+         )
+
+   end
