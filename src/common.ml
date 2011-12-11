@@ -16,5 +16,12 @@ let with_resource resource action post =
 let with_file_in filename action =
   with_resource (open_in filename) action close_in
 
+let identity x = x
+
 let list_all lst =
+(*
   List.fold_left (fun acc el -> acc && el) true lst
+
+  more efficiently, stops on first "false":
+*)
+  List.forall identity lst
