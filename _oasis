@@ -1,0 +1,21 @@
+OASISFormat: 0.2
+Name:        barbra
+Version:     0.0.1
+Synopsis:    Damn Simple Package Manager
+Authors:     camlunity
+License:     MIT
+Plugins:     META (0.2), StdFiles (0.2), DevFiles (0.2)
+
+Executable brb
+  Path:       bin
+  BuildTools: ocamlbuild
+  MainIs:     brb.ml
+
+Library barbra
+  Path:       src
+  BuildTools: ocamlbuild
+  Modules:    Barbra
+
+SourceRepository github
+  Type:     git
+  Location: git://github.com/camlunity/barbra.git
