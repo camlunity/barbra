@@ -7,9 +7,9 @@ License:     MIT
 Plugins:     META (0.2), StdFiles (0.2), DevFiles (0.2)
 
 Executable brb
-  Path:       bin
-  BuildTools: ocamlbuild
-  MainIs:     brb.ml
+  Path:         bin
+  BuildTools:   ocamlbuild
+  MainIs:       brb.ml
 
 Library barbra
   Path:       src
