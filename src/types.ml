@@ -22,3 +22,5 @@ let string_of_vcs_type = function
 let vcs_type_of_string s = match String.lowercase s with
   | "git" -> Git | "svn" -> Svn | "hg" -> Mercurial | "bzr" -> Bazaar
   | _ -> failwith "unknown VCS type %S" s
+
+type ('a, 'e) res = ('a, 'e) Res.res
