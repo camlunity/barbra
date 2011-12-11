@@ -24,3 +24,5 @@ let vcs_type_of_string s = match String.lowercase s with
   | _ -> failwith "unknown VCS type %S" s
 
 type ('a, 'e) res = ('a, 'e) Res.res
+
+type source = < fetch : unit -> (unit, exn) res >
