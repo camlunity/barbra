@@ -22,5 +22,6 @@ module type SOURCE =
     *)
     val fetch : string -> (* dep_name *)
                 string -> (* url *)
-                string
+                string option
+
   end
