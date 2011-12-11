@@ -25,4 +25,10 @@ let vcs_type_of_string s = match String.lowercase s with
 
 type ('a, 'e) res = ('a, 'e) Res.res
 
-type source = < fetch : unit -> (unit, exn) res >
+type source =
+  < fetch : unit -> (unit, exn) res
+    (* метод fetch должен скачать и распаковать нужную зависимость
+       в директорию _dep/имя_зависимости и вернуть () в случае успеха
+       либо исключение в случае ошибки.
+     *)
+  >
