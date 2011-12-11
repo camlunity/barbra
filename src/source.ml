@@ -21,6 +21,6 @@ module type SOURCE =
         FIXME: что в случае неудачи? ексепшн? манатки?
     *)
     val fetch : string -> (* dep_name *)
-                string -> (* url *))
+                string -> (* url *)
                 string
   end
