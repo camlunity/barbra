@@ -8,6 +8,8 @@ let makefile : install_type = object
       WithRes.bindres WithRes.with_sys_chdir source_dir
       (fun _old_path ->
          let command fmt = Printf.ksprintf Sys.command_ok fmt in
-         command "%s" "./configure"
+         command "./configure" >>= fun () ->
+         command "make" >>= fun () ->
+         command "make install"
       )
 end
