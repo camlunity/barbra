@@ -10,6 +10,7 @@ and brb_conf = "brb.conf"  (* просто имя файла без путей *
 
 (* предполагаем, что текущая директория -- корень проекта *)
 let install_from conf =
+  let src_dir = Filename.concat base_dir "src" in
   List.iter
     (fun (pkg, typ) ->
       printf "I: Installing %S ..\n" pkg;
@@ -17,7 +18,7 @@ let install_from conf =
       let source = match typ with
         | HttpArchive _ -> new http_archive typ
         | _ -> failwith "unfetchable type for %S" pkg
-      and dest_dir = Filename.concat base_dir pkg in
+      and dest_dir = Filename.concat src_dir pkg in
 
       if source#is_available () then (
         makedirs dest_dir;
