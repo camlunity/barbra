@@ -24,4 +24,7 @@ let list_all lst =
 
   more efficiently, stops on first "false":
 *)
-  List.forall identity lst
+  List.for_all identity lst
+
+include Cd_Ops
+module Stream = Am_Stream.Stream
