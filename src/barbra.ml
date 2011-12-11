@@ -18,11 +18,14 @@ and brb_conf = "brb.conf"  (* просто имя файла без путей *
 (* предполагаем, что текущая директория -- корень проекта *)
 let install_from conf =
   let db = Config.parse_config conf in
-  List.iter
-    (fun (pkg, _wher) ->
-       printf "we will install: %S\n%!" pkg
-    )
-    db
+  let () =
+    List.iter
+      (fun (pkg, _wher) ->
+         printf "we will install: %S\n%!" pkg
+      )
+      db
+  in
+    failwith "тут неплохо бы сгенерировать из _wher что-то для Install.*"
 
 
 let install () =
