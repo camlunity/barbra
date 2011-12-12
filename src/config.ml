@@ -69,7 +69,7 @@ let get_config_version s =
         try
           (* let () = dbg "get_config_version: line = %S" line in *)
           Scanf.sscanf (String.lowercase line) " version %s "
-            (fun v -> Stream.junk s; v)
+            (fun v -> v)
         with Scanf.Scan_failure _ ->
           failwith "first non-commented line of brb.conf should contain \
                     \"version N\" directive"
