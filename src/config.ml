@@ -56,7 +56,7 @@ let remove_CR s =
   Stream.map
     (fun line ->
        let len = String.length line in
-       if len > 0 || line.[len - 1] = '\x0D'
+       if len > 0 && line.[len - 1] = '\x0D'
        then String.sub line 0 (len - 1)
        else line
     )
