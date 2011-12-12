@@ -27,11 +27,11 @@ SourceRepository github
 Executable test
   Build$:          flag(tests)
   Install$:        flag(tests)
-  Path: tests/
+  Path: tests
   Install: false
   CompiledObject: best
   MainIs: test.ml
 
 Test main
-  Command: $test
+  Command: OCAMLRUNPARAM=b $test
   TestTools: test

@@ -25,4 +25,4 @@
 "src/ext" : include
 <src/ext/res.ml{,i}> | <src/ext/withM.ml{,i}> : camlp4r
 <src/ext/{filew,am_Stream}.ml{,i}> : camlp4r
-<**/*> : pkg_unix, pkg_num
+<**/*> : pkg_unix, pkg_num, debug
