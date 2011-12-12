@@ -15,8 +15,11 @@ class remote url : source_type = object
     let file_path = dest_dir </> Filename.basename url in
     let open Res in
         let command fmt = Printf.ksprintf Sys.command_ok fmt in
-        command "wget --no-check-certificate %s -O %s" url file_path >>= fun () ->
-        return file_path
+        let res = if Sys.file_exists file_path then
+            return ()
+          else
+            command "wget --no-check-certificate %s -O %s" url file_path
+        in res >>= fun () -> return file_path
 end
 
 
