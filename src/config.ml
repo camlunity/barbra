@@ -10,7 +10,7 @@ let read_all_lines ch =
 let parse_line_opt s =
     if String.length s > 0 then
       some &
-      Scanf.sscanf s "dep %s %s %s" (fun name typ src ->
+      Scanf.sscanf s " dep %s %s %s " (fun name typ src ->
         match String.lowercase typ with
           | "local"       -> (name,Local)
           | "http-tar-gz" -> (name,HttpArchive (src,TarGz))
