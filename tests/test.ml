@@ -7,12 +7,12 @@ open Common
 
 let cfg = "version 1
 
-dep erm_xml Git git://github.com/ermine/xml.git
-dep amall Hg https://bitbucket.org/gds/amall
-dep ocaml-gnuplot Bzr bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot
-dep ocaml-extlib Svn http://ocaml-extlib.googlecode.com/svn/trunk/
-dep oasis http-tar-gz https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz
-dep not-so-secret-project tar ~/nssp.tar"
+dep erm_xml git git://github.com/ermine/xml.git
+dep amall hg https://bitbucket.org/gds/amall
+dep ocaml-gnuplot bzr bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot
+dep ocaml-extlib svn http://ocaml-extlib.googlecode.com/svn/trunk/
+dep oasis remote-tar-gz https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz
+dep not-so-secret-project local-tar ~/nssp.tar"
 
 let cfg_res = [
   ("erm_xml", VCS (Git, "git://github.com/ermine/xml.git"));
@@ -20,13 +20,15 @@ let cfg_res = [
   ("ocaml-gnuplot", VCS (Bzr, "bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot"));
   ("ocaml-extlib", VCS (SVN, "http://ocaml-extlib.googlecode.com/svn/trunk/"));
   ("oasis", Remote (`TarGz, "https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz"));
-  ("secret-project", Local (`Directory, "~/work/project"));
-  ("not-so-secret-project", Local (`TarGz, "~/nssp.tar"));
+  ("not-so-secret-project", Local (`Tar, "~/nssp.tar"));
 ]
 
 let test_parse_lines () =
   let config = Config.parse_string cfg in
-  cfg_res = config
+  let r = cfg_res = config in
+  ( (if not r then List.iter (fun (n,_) -> dbg "pkg: %S" n) config else ())
+  ; r
+  )
 
 
 let tests = [
