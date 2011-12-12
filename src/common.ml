@@ -42,3 +42,7 @@ let makedirs ?(mode=0o755) path =
       dir)
     ""
     (String.nsplit path Filename.dir_sep)
+
+include Printf
+
+let dbg fmt = ksprintf (fun s -> eprintf "DBG: %s\n%!" s) fmt

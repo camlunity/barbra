@@ -67,6 +67,7 @@ let get_config_version s =
       None -> failwith "empty config"
     | Some line ->
         try
+          (* let () = dbg "get_config_version: line = %S" line in *)
           Scanf.sscanf (String.lowercase line) " version %s "
             (fun v -> Stream.junk s; v)
         with Scanf.Scan_failure _ ->
