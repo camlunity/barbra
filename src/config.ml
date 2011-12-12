@@ -24,10 +24,64 @@ let parse_line_opt s =
     else
       None
 
-let parse_stream s =
+let stream_filter : 'a . ('a -> bool) -> 'a Stream.t -> 'a Stream.t
+ = fun pred s ->
+     (* todo: implement directly *)
+     Stream.map_filter (fun x -> if pred x then Some x else None) s
+
+let line_means_something line =
+  let len = String.length line in
+  let rec inner i =
+    if i = len
+    then false
+    else
+      begin match line.[i] with
+          '#' -> false
+        | '\x20' | '\x09' | '\x0A' | '\x0D' -> inner (i + 1)
+        | _ -> true
+      end
+  in
+    inner 0
+
+let filter_comments s =
+  stream_filter line_means_something s
+
+let parse_config_v1 s =
   s
   |> Stream.map_filter parse_line_opt
   |> Stream.to_list
+
+let remove_CR s =
+  Stream.map
+    (fun line ->
+       let len = String.length line in
+       if len > 0 || line.[len - 1] = '\x0D'
+       then String.sub line 0 (len - 1)
+       else line
+    )
+    s
+
+let get_config_version s =
+  begin match Stream.next_opt s with
+      None -> failwith "empty config"
+    | Some line ->
+        try
+          Scanf.sscanf (String.lowercase line) " version %s "
+            (fun v -> Stream.junk s; v)
+        with Scanf.Scan_failure _ ->
+          failwith "first non-commented line of brb.conf should contain \
+                    \"version N\" directive"
+  end
+
+let parse_stream s =
+  s
+  |> remove_CR
+  |> filter_comments
+  |> fun s ->
+       begin match get_config_version s with
+         "1" -> parse_config_v1 s
+       | v -> failwith "unknown config version %S" v
+       end
 
 let parse_config filename =
   filename
