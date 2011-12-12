@@ -1,3 +1,9 @@
+(* значения, важные во всём проекте *)
+
+let base_dir = "_dep"
+
+(***************************)
+
 include ExtString
 
 let failwith fmt = Printf.ksprintf failwith fmt

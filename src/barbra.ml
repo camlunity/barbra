@@ -4,7 +4,7 @@ open Printf
 open Source
 
 let version = 1
-and base_dir = "_dep"
+and base_dir = Common.base_dir
 and brb_conf = "brb.conf"  (* просто имя файла без путей *)
 
 
