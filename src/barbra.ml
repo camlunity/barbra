@@ -62,6 +62,10 @@ let install () =
           go tconf
       end
   in begin
+    (* todo: убрать инициализацию отсюда, так как именно по наличию
+             brb.conf мы можем судить, можно ли создавать эти
+             директории и генерить конфиги findlib'у. *)
     List.iter makedirs [src_dir; tmp_dir; bin_dir; lib_dir; etc_dir];
+    Install.generate_findlib_configs ();
     with_config go
   end
