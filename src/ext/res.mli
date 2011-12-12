@@ -136,6 +136,9 @@ value repeat : int -> ( 'a -> res 'a 'e ) -> 'a -> res 'a ('e * int)
 module Sys
  :
   sig
+
+    include module type of Sys;
+
     value command_ok
      : string -> res unit exn
     ;
