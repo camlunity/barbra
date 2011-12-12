@@ -65,7 +65,7 @@ let install_from conf =
 
 
 let install () =
-  let conf = Filename.concat Filename.current_dir_name brb_conf in
+  let conf = Filename.current_dir_name </> brb_conf in
   if Sys.file_exists conf then
     install_from conf
   else
