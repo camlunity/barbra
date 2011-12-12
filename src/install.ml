@@ -42,6 +42,16 @@ end
 open WithCombs
 
 
+(* предполагаем, что находимся в корневой дире проекта
+   todo: может давайте везде подобное предполагать?
+         А то и вынести абсолютные пути вместо относительных
+         куда-нибудь Global?
+ *)
+let generate_findlib_conf () =
+  let our_project_path = Sys.getcwd () in
+  let etc_dir = our_project_path </> etc_dir in
+  raise Exit
+
 
 (* предполагаем, что находимся в корневой дире проекта *)
 let makefile : install_type = object
