@@ -44,12 +44,14 @@ let install_from conf =
                 in
                 let project_path = raise Exit in
                 go_temp_dir project_path
-            | Bundled (_, ((`TarGz | `TarBzip2 | `Tar) as archive_type), file_path) ->
+            | Bundled (_, (#remote_type as archive_type), file_path) ->
               let source = new Source.archive archive_type file_path in
-              let project_path = exn_res & source#fetch ~dest_dir:(src_dir </> hname)
+              let project_path = exn_res &
+                source#fetch ~dest_dir:(src_dir </> hname)
               in go_temp_dir project_path
             | Bundled (Temporary, `Directory, project_path) ->
-                let () = failwith "todo: install from %S" project_path in
+                let () = Res.exn_res &
+                  Install.makefile#install ~source_dir:project_path in
                 go & (hname, Installed) :: tconf
             | Installed ->
                 go tconf
