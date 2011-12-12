@@ -62,6 +62,6 @@ let install () =
           go tconf
       end
   in begin
-    List.iter makedirs [src_dir; tmp_dir; bin_dir; lib_dir; etc_lib];
+    List.iter makedirs [src_dir; tmp_dir; bin_dir; lib_dir; etc_dir];
     with_config go
   end
