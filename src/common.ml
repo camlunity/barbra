@@ -1,7 +1,5 @@
 (* значения, важные во всём проекте *)
 
-let base_dir = "_dep"
-
 (***************************)
 
 include ExtString
@@ -52,3 +50,5 @@ let makedirs ?(mode=0o755) path =
 include Printf
 
 let dbg fmt = ksprintf (fun s -> eprintf "DBG: %s\n%!" s) fmt
+
+let (</>) = Filename.concat

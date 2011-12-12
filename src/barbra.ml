@@ -1,16 +1,12 @@
 open Types
 open Common
-open Printf
 open Source
+open Res
 
-let version = 1
-and base_dir = Common.base_dir
-and brb_conf = "brb.conf"  (* просто имя файла без путей *)
-
+include Global
 
 (* предполагаем, что текущая директория -- корень проекта *)
 let install_from conf =
-  let _src_dir = Filename.concat base_dir "src" in
   let config = Config.parse_config conf in
 
   let rec go config =
@@ -24,9 +20,9 @@ let install_from conf =
           in
           begin match htyp with
             | Remote (remote_type, url) ->
-                let () = failwith "todo: fetch %S" url in
-                let project_path = raise Exit in
-                go &
+              let source = new remote_archive remote_type url in
+              let project_path = exn_res & source#fetch ~dest_dir:(src_dir </> hname)
+              in go &
                   (hname, Bundled
                      (Temporary, (remote_type :> local_type), project_path))
                   :: tconf
@@ -60,24 +56,11 @@ let install_from conf =
                 go tconf
           end
     end
-(*
-    (fun (pkg, typ) ->
-      printf "I: Installing %S ..\n" pkg;
-
-      let source = match typ with
-        | Remote (archive_type, uri) ->
-          new remote_archive uri archive_type
-        | _ -> failwith "unfetchable type for %S" pkg
-      and dest_dir = Filename.concat src_dir pkg in
-
-      if source#is_available () then (
-        makedirs dest_dir;
-        ignore & source#fetch ~dest_dir
-      ) else
-        failwith "fixme: how to report this?"
-*)
-  in
+  in begin
+    makedirs src_dir;
+    makedirs tmp_dir;
     go config
+  end
 
 
 let install () =

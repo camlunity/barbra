@@ -1,6 +1,6 @@
 open Common
 open Types
-
+open Global
 
 (* variable that was not set will be restored to "". *)
 let with_env =

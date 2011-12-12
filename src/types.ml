@@ -35,7 +35,7 @@ class type source_type = object
       use, i. e. all the required binaries are installed and [false]
       otherwise. *)
 
-  method fetch : dest_dir:string -> (unit, exn) res
+  method fetch : dest_dir:string -> (string, exn) res
   (** Fetches package source to [dest_dir], which is located in
       [Barbra.base_dir]. *)
 end
