@@ -2,8 +2,6 @@ open Types
 open Printf
 open Common
 
-module G = Global
-
 (** [ensure cmd] Returns [true] if a given [command] is available
     on the host system and [false] otherwise. *)
 let ensure cmd =
