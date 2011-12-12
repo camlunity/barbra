@@ -15,12 +15,13 @@ dep oasis http-tar-gz https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2
 dep not-so-secret-project tar ~/nssp.tar"
 
 let cfg_res = [
-  ("erm_xml", `Remote (VCS ("git://github.com/ermine/xml.git", Git)));
-  ("amall", `Remote (VCS ("https://bitbucket.org/gds/amall", Hg)));
-  ("ocaml-gnuplot", `Remote (VCS ("bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot", Bzr)));
-  ("ocaml-extlib", `Remote (VCS ("http://ocaml-extlib.googlecode.com/svn/trunk/", SVN)));
-  ("oasis", `Remote (Archive ("https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz", TarGz)));
-  ("not-so-secret-project", `Local (Archive ("~/nssp.tar", Tar)));
+  ("erm_xml", VCS (Git, "git://github.com/ermine/xml.git"));
+  ("amall", VCS (Hg, "https://bitbucket.org/gds/amall"));
+  ("ocaml-gnuplot", VCS (Bzr, "bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot"));
+  ("ocaml-extlib", VCS (SVN, "http://ocaml-extlib.googlecode.com/svn/trunk/"));
+  ("oasis", Remote (`TarGz, "https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz"));
+  ("secret-project", Local (`Directory, "~/work/project"));
+  ("not-so-secret-project", Local (`TarGz, "~/nssp.tar"));
 ]
 
 let test_parse_lines () =

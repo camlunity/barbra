@@ -13,11 +13,12 @@ let parse_line_opt s =
       Scanf.sscanf s " dep %s %s %s " (fun name typ src ->
         (* FIXME(superbobry): doesn't cover the new type schema! *)
         let package = match String.lowercase typ with
-          | "http-tar-gz"  -> `Remote (Archive (src, TarGz))
-          | "http-tar-bz2" -> `Remote (Archive (src, TarBzip2))
-          | "tar"          -> `Local  (Archive (src, Tar))
+          | "http-tar-gz"  -> Remote (`TarGz, src)
+          | "http-tar-bz2" -> Remote (`TarBzip2, src)
+          | "tar"          -> Local (`Tar, src)
+          | "fs-src"       -> Local (`Directory, src)
           | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
-            `Remote (VCS (src, vcs_type_of_string typ))
+            VCS (vcs_type_of_string typ, src)
           | _ -> failwith "unsupported delivery method: %S" typ
         in (name, package)
       )

@@ -1,33 +1,20 @@
 open Printf
 open Common
 
-type archive_type = TarGz | TarBzip2 | Tar
+type remote_type = [ `TarGz | `TarBzip2 | `Tar ]
+type local_type  = [ remote_type | `Directory ]
 type vcs_type = Git | Hg | Bzr | Darcs | SVN | CVS
+type bundle_type = Temporary | Persistent
 
-type package_type =
-  | VCS of string * vcs_type
-  | Archive of string * archive_type
-
-type package = [ `Local of package_type
-               | `Remote of package_type
-               | `Bundled of string
-               ]
+type package =
+  | Remote of remote_type * string
+  | Local of local_type * string
+  | VCS of vcs_type * string
+  | Bundled of bundle_type * local_type * string
+  | Installed
 
 type db = (string * package) list
 
-
-let string_of_arctype = function
-  | TarGz    -> "tar.gz"
-  | TarBzip2 -> "tar.bzip2"
-  | Tar      -> "tar"
-
-let string_of_vcs_type = function
-  | Git   -> "git"
-  | Hg    -> "hg"
-  | Bzr   -> "bzr"
-  | Darcs -> "darcs"
-  | SVN   -> "svn"
-  | CVS   -> "cvs"
 
 let vcs_type_of_string s = match String.lowercase s with
   | "git"   -> Git

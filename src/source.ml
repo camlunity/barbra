@@ -14,9 +14,9 @@ class remote_archive uri archive_type : source_type = object
   method fetch ~dest_dir =
     let fn = Filename.basename uri in
     let archive_cmd = match archive_type with
-      | Tar -> "tar -xf "
-      | TarGz -> "tar -zxf"
-      | TarBzip2 -> "tar -jxf"
+      | `Tar -> "tar -xf "
+      | `TarGz -> "tar -zxf"
+      | `TarBzip2 -> "tar -jxf"
     in
 
     let open WithM in
