@@ -19,7 +19,7 @@ Executable brb
 Library barbra
   Path:       src
   Modules:    Barbra
-  InternalModules: Config, Source, Install
+  InternalModules: Config, Source, Install, Global, Types
 
 SourceRepository github
   Type:     git
