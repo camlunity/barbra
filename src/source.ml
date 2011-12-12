@@ -8,7 +8,7 @@ let ensure cmd =
   Sys.command (sprintf "sh -c 'which %s &> /dev/null'" cmd) = 0
 
 
-class http_archive (HttpArchive (uri, archive_type)) : source_type = object
+class remote_archive uri archive_type : source_type = object
   method is_available () = List.for_all ensure ["wget"; "tar"]
 
   method fetch ~dest_dir =

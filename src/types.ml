@@ -2,34 +2,42 @@ open Printf
 open Common
 
 type archive_type = TarGz | TarBzip2 | Tar
+type vcs_type = Git | Hg | Bzr | Darcs | SVN | CVS
 
-type vcs_type = Git | Svn | Hg | Bzr
+type package_type =
+  | VCS of string * vcs_type
+  | Archive of string * archive_type
 
-type whereis =
-  | VCS of string*vcs_type
-  | FsSrc of string
-  | Local
-  | HttpArchive of string*archive_type
-  | FsArchive of string*archive_type
+type package = [ `Local of package_type
+               | `Remote of package_type
+               | `Bundled of string
+               ]
 
-type db = (string * whereis) list
+type db = (string * package) list
+
 
 let string_of_arctype = function
-  | TarGz -> "tar.gz" | TarBzip2 -> "tar.bzip2" | Tar -> "tar"
+  | TarGz    -> "tar.gz"
+  | TarBzip2 -> "tar.bzip2"
+  | Tar      -> "tar"
 
 let string_of_vcs_type = function
-  | Git -> "git" | Svn -> "svn" | Hg -> "hg" | Bzr -> "bzr"
+  | Git   -> "git"
+  | Hg    -> "hg"
+  | Bzr   -> "bzr"
+  | Darcs -> "darcs"
+  | SVN   -> "svn"
+  | CVS   -> "cvs"
 
 let vcs_type_of_string s = match String.lowercase s with
-  | "git" -> Git | "svn" -> Svn | "hg" -> Hg | "bzr" -> Bzr
+  | "git"   -> Git
+  | "hg"    -> Hg
+  | "bzr"   -> Bzr
+  | "darcs" -> Darcs
+  | "cvs"   -> CVS
+  | "svn"   -> SVN
   | _ -> failwith "unknown VCS type %S" s
 
-let string_of_dbel (name, wher) = match wher with
-  | VCS (url, typ) -> sprintf "%s: VCS.%s %s" name (string_of_vcs_type typ) url
-  | FsSrc src -> sprintf "%s: FsSrc %s" name src
-  | Local -> sprintf "%s: Local" name
-  | HttpArchive (s, _t) -> sprintf "%s: HttpArchive %s" name s
-  | FsArchive (s, _t) -> sprintf "%s: FsArchive %s" name s
 
 type ('a, 'e) res = ('a, 'e) Res.res
 

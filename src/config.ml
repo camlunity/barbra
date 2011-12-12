@@ -11,15 +11,15 @@ let parse_line_opt s =
     if String.length s > 0 then
       some &
       Scanf.sscanf s " dep %s %s %s " (fun name typ src ->
-        match String.lowercase typ with
-          | "local"       -> (name,Local)
-          | "http-tar-gz" -> (name,HttpArchive (src,TarGz))
-          | "http-tar-bz2" -> (name,HttpArchive (src,TarBzip2))
-          | "fs-tar"      -> (name,FsArchive   (src,Tar))
-          | "svn" | "hg"
-          | "git" | "bzr" -> (name,VCS (src,vcs_type_of_string typ) )
-          | "fs-src"      -> (name,FsSrc src)
-          | _             -> failwith "unsupported delivery method"
+        (* FIXME(superbobry): doesn't cover the new type schema! *)
+        let package = match String.lowercase typ with
+          | "http-tar-gz"  -> `Remote (Archive (src, TarGz))
+          | "http-tar-bz2" -> `Remote (Archive (src, TarBzip2))
+          | "tar"          -> `Local  (Archive (src, Tar))
+          | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
+            `Remote (VCS (src, vcs_type_of_string typ))
+          | _ -> failwith "unsupported delivery method: %S" typ
+        in (name, package)
       )
     else
       None
@@ -79,8 +79,8 @@ let parse_stream s =
   |> filter_comments
   |> fun s ->
        begin match get_config_version s with
-         "1" -> parse_config_v1 s
-       | v -> failwith "unknown config version %S" v
+         "1" | _ -> parse_config_v1 s
+       (* | v -> failwith "unknown config version %S" v *)
        end
 
 let parse_config filename =

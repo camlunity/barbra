@@ -5,25 +5,22 @@ open Types
 open Common
 
 
-let cfg = "dep erm_xml Git git://github.com/ermine/xml.git
+let cfg = "version 1
+
+dep erm_xml Git git://github.com/ermine/xml.git
 dep amall Hg https://bitbucket.org/gds/amall
 dep ocaml-gnuplot Bzr bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot
 dep ocaml-extlib Svn http://ocaml-extlib.googlecode.com/svn/trunk/
-dep secret-project local
 dep oasis http-tar-gz https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz
-dep not-so-secret-project fs-tar ~/nssp.tar
-dep work-project fs-src ~/work/project"
-
+dep not-so-secret-project tar ~/nssp.tar"
 
 let cfg_res = [
-  ("erm_xml", VCS ("git://github.com/ermine/xml.git", Git));
-  ("amall", VCS ("https://bitbucket.org/gds/amall", Hg));
-  ("ocaml-gnuplot", VCS ("bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot", Bzr));
-  ("ocaml-extlib", VCS ("http://ocaml-extlib.googlecode.com/svn/trunk/", Svn));
-  ("secret-project", Local);
-  ("oasis", HttpArchive ("https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz", TarGz));
-  ("not-so-secret-project", FsArchive ("~/nssp.tar", Tar));
-  ("work-project", FsSrc "~/work/project")
+  ("erm_xml", `Remote (VCS ("git://github.com/ermine/xml.git", Git)));
+  ("amall", `Remote (VCS ("https://bitbucket.org/gds/amall", Hg)));
+  ("ocaml-gnuplot", `Remote (VCS ("bzr://ocaml-gnuplot.bzr.sourceforge.net/bzrroot/ocaml-gnuplot", Bzr)));
+  ("ocaml-extlib", `Remote (VCS ("http://ocaml-extlib.googlecode.com/svn/trunk/", SVN)));
+  ("oasis", `Remote (Archive ("https://forge.ocamlcore.org/frs/download.php/626/oasis-0.2.1~alpha1.tar.gz", TarGz)));
+  ("not-so-secret-project", `Local (Archive ("~/nssp.tar", Tar)));
 ]
 
 let test_parse_lines () =

@@ -16,7 +16,8 @@ let install_from conf =
       printf "I: Installing %S ..\n" pkg;
 
       let source = match typ with
-        | HttpArchive _ -> new http_archive typ
+        | `Remote (Archive (uri, archive_type)) ->
+          new remote_archive uri archive_type
         | _ -> failwith "unfetchable type for %S" pkg
       and dest_dir = Filename.concat src_dir pkg in
 
