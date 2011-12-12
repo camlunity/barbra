@@ -2,7 +2,6 @@
 open Common
 open Types
 
-
 let read_all_lines ch =
   Filew.channel_lines ch
 
