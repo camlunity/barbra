@@ -1,0 +1,15 @@
+| barbra.ml: failwith "todo: copy local dir %S" local_path in
+| barbra.ml: failwith "todo: extract local archive %S" local_path in
+| barbra.ml: failwith "todo: clone vcs %S" url in
+| barbra.ml: failwith "todo: copy persistent dir %S to work dir"
+
+| удаление ненужных файлов и директорий (а именно, Bundled Temporary)
+
+| использование формы запуска не command fmt, а Unix.create_process
+  или подобного, чтобы не долбаться самим с квотингом путей (сейчас
+  квотинга нет нигде, и добавлять его ВЕЗДЕ -- криво.  то есть, будет:
+  "command [| "rm" ; "-rf" ; some_path |]"
+
+| потестировать, как собираются проекты с чем-то, требующим .so / ld.conf
+  (а именно, байткодовые исполняемые файлы, собранные из зависимостей,
+  лежащие в _dep/bin/)
