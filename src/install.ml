@@ -50,11 +50,6 @@ end
 open WithCombs
 
 
-(* предполагаем, что находимся в корневой дире проекта
-   todo: может давайте везде подобное предполагать?
-         А то и вынести абсолютные пути вместо относительных
-         куда-нибудь Global?
- *)
 (*
 let generate_findlib_configs () : unit =
   let etc_dir = G.etc_dir in
@@ -96,7 +91,7 @@ let generate_findlib_configs () : unit =
 *)
 
 
-(* предполагаем, что находимся в корневой дире проекта *)
+(* assuming we are in project's root dir *)
 let makefile : install_type = object
   method install ~source_dir =
     let () = Global.create_dirs () in

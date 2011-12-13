@@ -14,7 +14,7 @@ let with_config f =
     failwith "can't find brb.conf in %S" base_dir
 
 
-(* предполагаем, что текущая директория -- корень проекта *)
+(* assuming we are in project's root dir *)
 let install () =
   let rec go = function
     | [] -> printf "Done"

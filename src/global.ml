@@ -2,7 +2,7 @@ open Common
 
 let version = 1
 
-let brb_conf = "brb.conf"  (* просто имя файла без путей *)
+let brb_conf = "brb.conf"  (* file name without paths *)
 
 let base_dir = Sys.getcwd ()
 let dep_dir = base_dir </> "_dep"
