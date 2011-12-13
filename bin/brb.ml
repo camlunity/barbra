@@ -10,7 +10,7 @@ let opts = Arg.align [
 let () = begin
   Arg.parse opts ignore "brb";
   if !show_version then
-    printf "%i\n" Barbra.version;
-
-  Barbra.install ()
+    printf "%i\n" Barbra.version
+  else
+    Barbra.install ()
 end
