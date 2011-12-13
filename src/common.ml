@@ -38,3 +38,5 @@ include Printf
 let dbg fmt = ksprintf (fun s -> eprintf "DBG: %s\n%!" s) fmt
 
 let (</>) = Filename.concat
+
+let command fmt = Printf.ksprintf Res.Sys.command_ok fmt
