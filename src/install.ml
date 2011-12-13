@@ -55,6 +55,7 @@ open WithCombs
          А то и вынести абсолютные пути вместо относительных
          куда-нибудь Global?
  *)
+(*
 let generate_findlib_configs () : unit =
   let etc_dir = G.etc_dir in
   let dest_dir = G.lib_dir </> "site-lib" in
@@ -92,6 +93,7 @@ let generate_findlib_configs () : unit =
     end
   in
     ()
+*)
 
 
 (* предполагаем, что находимся в корневой дире проекта *)
@@ -102,13 +104,12 @@ let makefile : install_type = object
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
     WithRes.bindres with_env_prepended
       ("OCAMLPATH", G.lib_dir) & fun _old_env1 ->
-    WithRes.bindres with_env_prepended ("PATH", G.bin_dir) & fun _old_env2 ->
+    WithRes.bindres with_env_prepended
+      ("PATH", G.bin_dir) & fun _old_env2 ->
     WithRes.bindres with_env
-      ( "OCAMLFIND_CONF", G.etc_dir </> "findlib.conf") & fun _old_env3 ->
-    WithRes.bindres with_env
-      ( "OCAMLFIND_LDCONF", G.lib_dir </> "ld.conf"
-      ) & fun _old_env4 ->
-    let command fmt = Printf.ksprintf Sys.command_ok fmt in
+      ("OCAMLFIND_DESTDIR", G.lib_dir) & fun _old_env3 ->
+    WithRes.bindres with_env_prepended
+      ("CAML_LD_LIBRARY_PATH", G.stublibs_dir) & fun _old_env4 ->
     (if Sys.file_exists "configure" then
         command "./configure"
      else
