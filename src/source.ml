@@ -15,12 +15,8 @@ class remote url : source_type = object
     let () = Global.create_dirs () in
     let file_path = dest_dir </> Filename.basename url in
     let open Res in
-        let command fmt = Printf.ksprintf Sys.command_ok fmt in
-        let res = if Sys.file_exists file_path then
-            return ()
-          else
-            command "wget --no-check-certificate %s -O %s" url file_path
-        in res >>= fun () -> return file_path
+        command "wget -c --no-check-certificate %s -O %s"
+          url file_path >>= fun () -> return file_path
 end
 
 
@@ -36,7 +32,6 @@ class archive archive_type file_path : source_type = object
     in
 
     let open Res in
-        let command fmt = Printf.ksprintf Sys.command_ok fmt in
         command "mkdir -p %s" dest_dir >>= fun () ->
         command "%s %s -C %s" archive_cmd file_path dest_dir >>= fun () ->
         command "rm -rf %s" file_path >>= fun () ->
@@ -46,5 +41,5 @@ class archive archive_type file_path : source_type = object
         let files = Array.map ((</>) dest_dir) (Sys.readdir dest_dir)
         in match Array.to_list files with
           | [d] when Sys.is_directory d -> return d
-          | _   -> return dest_dir
+          | _ -> return dest_dir
 end
