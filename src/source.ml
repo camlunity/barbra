@@ -46,15 +46,23 @@ end
 
 
 class vcs vcs_type url : source_type = object
-  method is_available () = true  (* FIXME(bobry): stub! *)
+  method is_available () = ensure & match vcs_type with
+    | Git   -> "git"
+    | Hg    -> "hg"
+    | Bzr   -> "bzr"
+    | Darcs -> "darcs"
+    | SVN   -> "svn"
+    | CVS   -> "cvs"
 
   method fetch ~dest_dir =
     let () = Global.create_dirs () in
     let vcs_cmd = match vcs_type with
       | Git   -> "git clone --depth=1"
       | Hg    -> "hg clone"
-      | SVN   -> "svn co"
+      | Bzr   -> "bzr branch"
       | Darcs -> "darcs get --lazy"
+      | SVN   -> "svn co"
+      | CVS   -> failwith "fixme: add clone command for cvs"
     in
 
     let open Res in
