@@ -99,6 +99,7 @@ let generate_findlib_configs () : unit =
 (* предполагаем, что находимся в корневой дире проекта *)
 let makefile : install_type = object
   method install ~source_dir =
+    let () = Global.create_dirs () in
     let open WithM in
     let open Res in
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->

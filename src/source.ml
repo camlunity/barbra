@@ -12,6 +12,7 @@ class remote url : source_type = object
   method is_available () = List.for_all ensure ["wget"]
 
   method fetch ~dest_dir =
+    let () = Global.create_dirs () in
     let file_path = dest_dir </> Filename.basename url in
     let open Res in
         let command fmt = Printf.ksprintf Sys.command_ok fmt in
@@ -27,6 +28,7 @@ class archive archive_type file_path : source_type = object
   method is_available () = List.for_all ensure ["tar"]
 
   method fetch ~dest_dir =
+    let () = Global.create_dirs () in
     let archive_cmd = match archive_type with
       | `Tar -> "tar -xf "
       | `TarGz -> "tar -zxf"
