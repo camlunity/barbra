@@ -16,9 +16,8 @@ let etc_dir = dep_dir </> "etc"
 let lazy_dirs_creation = lazy
   (
     List.iter (fun p -> ignore & Sys.command ("mkdir -p " ^ p)) [
-      dep_dir; tmp_dir; bin_dir; lib_dir; etc_dir;
+      dep_dir; tmp_dir; bin_dir; lib_dir; etc_dir
       (* NOTE(bobry): hack-hack-hack ... *)
-      lib_dir </> "site-lib"
     ]
   )
 

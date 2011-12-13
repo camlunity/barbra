@@ -58,7 +58,7 @@ open WithCombs
 (*
 let generate_findlib_configs () : unit =
   let etc_dir = G.etc_dir in
-  let dest_dir = G.lib_dir </> "site-lib" in
+  let dest_dir = G.lib_dir </> "sit#e-lib" in
   let new_ld_conf = G.lib_dir </> "ld.conf" in
   let () = assert (Sys.is_directory etc_dir) in
   let path =
