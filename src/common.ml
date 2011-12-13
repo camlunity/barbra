@@ -33,27 +33,6 @@ let list_all lst =
 include Cd_Ops
 module Stream = Am_Stream.Stream
 
-
-(** [makedirs mode path] recursively creates a given path, in the way
-    'mkdir -p' does it.
-
-    вероятны проблемы с вендовыми путями наподобие c:\\someshit\\othershit,
-    может лучше идти с конца path?  откусывать по одному и смотреть,
-    есть ли дира.  если нет -- смотреть выше по Filename.{base,dir}name.
-    кроме того, тут фейл в случае, если Sys.file_exists, но это таки файл,
-    желательно культурно выругаться.
- *)
-let makedirs ?(mode=0o755) path =
-  ignore & List.fold_left
-    (fun base chunk ->
-      let dir = Filename.concat base chunk in
-      if not (Sys.file_exists dir) then
-        Unix.mkdir dir mode;
-
-      dir)
-    ""
-    (String.nsplit path Filename.dir_sep)
-
 include Printf
 
 let dbg fmt = ksprintf (fun s -> eprintf "DBG: %s\n%!" s) fmt

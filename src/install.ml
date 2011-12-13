@@ -2,6 +2,8 @@ open Common
 open Types
 open Global
 
+module G = Global
+
 
 let getenv_or_empty env_name =
   try Unix.getenv env_name with Not_found -> ""
@@ -54,10 +56,9 @@ open WithCombs
          куда-нибудь Global?
  *)
 let generate_findlib_configs () : unit =
-  let our_project_path = Sys.getcwd () in
-  let etc_dir = our_project_path </> etc_dir in
-  let dest_dir = our_project_path </> lib_dir </> "site-lib" in
-  let new_ld_conf = our_project_path </> lib_dir </> "ld.conf" in
+  let etc_dir = G.etc_dir in
+  let dest_dir = G.lib_dir </> "site-lib" in
+  let new_ld_conf = G.lib_dir </> "ld.conf" in
   let () = assert (Sys.is_directory etc_dir) in
   let path =
     let old_path = getenv_or_empty "OCAMLPATH" in
@@ -98,26 +99,20 @@ let makefile : install_type = object
   method install ~source_dir =
     let open WithM in
     let open Res in
-    let our_project_path = Sys.getcwd () in
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
     WithRes.bindres with_env_prepended
-      ("OCAMLPATH", our_project_path </> lib_dir) & fun _old_env1 ->
-    WithRes.bindres with_env_prepended
-      ("PATH", our_project_path </> bin_dir) & fun _old_env2 ->
+      ("OCAMLPATH", G.lib_dir) & fun _old_env1 ->
+    WithRes.bindres with_env_prepended ("PATH", G.bin_dir) & fun _old_env2 ->
     WithRes.bindres with_env
-      ( "OCAMLFIND_CONF"
-      , our_project_path </> etc_dir </> "findlib.conf"
-      ) & fun _old_env3 ->
+      ( "OCAMLFIND_CONF", G.etc_dir </> "findlib.conf") & fun _old_env3 ->
     WithRes.bindres with_env
-      ( "OCAMLFIND_LDCONF"
-      , our_project_path </> lib_dir </> "ld.conf"
+      ( "OCAMLFIND_LDCONF", G.lib_dir </> "ld.conf"
       ) & fun _old_env4 ->
     let command fmt = Printf.ksprintf Sys.command_ok fmt in
-    (let co = "configure" in
-     if Sys.file_exists co
-     then command "./%s" co
-     else return ()
-    ) >>= fun () ->
+    (if Sys.file_exists "configure" then
+        command "./configure"
+     else
+        return ()) >>= fun () ->
     command "make" >>= fun () ->
     command "make install"
 end
