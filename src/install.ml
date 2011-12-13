@@ -106,6 +106,8 @@ let makefile : install_type = object
       ("OCAMLFIND_DESTDIR", G.lib_dir) & fun _old_env3 ->
     WithRes.bindres with_env_prepended
       ("CAML_LD_LIBRARY_PATH", G.stublibs_dir) & fun _old_env4 ->
+    WithRes.bindres with_env
+      ("OCAMLFIND_LDCONF", "ignore") & fun _old_env5 ->
     (if Sys.file_exists "configure" then
         if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0
         then
