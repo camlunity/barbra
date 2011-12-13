@@ -15,8 +15,8 @@ class remote url : source_type = object
     let () = Global.create_dirs () in
     let file_path = dest_dir </> Filename.basename url in
     let open Res in
-        command "wget -c --no-check-certificate %s -O %s"
-          url file_path >>= fun () -> return file_path
+        exec ["wget"; "-c"; "--no-check-certificate"; url; "-O"; file_path]
+        >>= fun () -> return file_path
 end
 
 
@@ -26,15 +26,15 @@ class archive archive_type file_path : source_type = object
   method fetch ~dest_dir =
     let () = Global.create_dirs () in
     let archive_cmd = match archive_type with
-      | `Tar -> "tar -xf "
-      | `TarGz -> "tar -zxf"
-      | `TarBzip2 -> "tar -jxf"
+      | `Tar -> ["tar"; "-xf"]
+      | `TarGz -> ["tar"; "-zxf"]
+      | `TarBzip2 -> ["tar"; "-jxf"]
     in
 
     let open Res in
-        command "mkdir -p %s" dest_dir >>= fun () ->
-        command "%s %s -C %s" archive_cmd file_path dest_dir >>= fun () ->
-        command "rm -rf %s" file_path >>= fun () ->
+        mkdir_p dest_dir >>= fun () ->
+        exec (archive_cmd @ [file_path; "-C"; dest_dir]) >>= fun () ->
+        (Res.wrap1 Sys.remove file_path) >>= fun () ->
 
         (* If [dest_dir] contains a single directory, assume it *is* the
            source dir, otherwise return [dest_dir]. *)
@@ -57,16 +57,16 @@ class vcs vcs_type url : source_type = object
   method fetch ~dest_dir =
     let () = Global.create_dirs () in
     let vcs_cmd = match vcs_type with
-      | Git   -> "git clone --depth=1"
-      | Hg    -> "hg clone"
-      | Bzr   -> "bzr branch"
-      | Darcs -> "darcs get --lazy"
-      | SVN   -> "svn co"
-      | CVS   -> failwith "fixme: add clone command for cvs"
+      | Git   -> ["git"; "clone"; "--depth=1"]
+      | Hg    -> ["hg"; "clone"]
+      | Bzr   -> ["bzr"; "branch"]
+      | Darcs -> ["darcs"; "get"; "--lazy"]
+      | SVN   -> ["svn"; "co"]
+      | CVS   -> ["cvs"; "co"]
     in
 
     let open Res in
-        command "%s %s %s" vcs_cmd url dest_dir >>= fun () ->
+        exec (vcs_cmd @ [url; dest_dir]) >>= fun () ->
         return dest_dir
 end
 
@@ -82,7 +82,7 @@ class directory path : source_type = object
     then failwith "directory#fetch: dest_dir=%S must be empty" dest_dir
     else
       let open Res in
-      command "cp -R %s %s" path dest_dir >>= fun () ->
+      exec ["cp"; "-R"; path; dest_dir] >>= fun () ->
       return dest_dir
 end
 

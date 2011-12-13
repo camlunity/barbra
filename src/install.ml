@@ -121,6 +121,10 @@ let makefile : install_type = object
            exec ["sh" ; "./configure"]
      else
         return ()) >>= fun () ->
-    command "make" >>= fun () ->
-    command "make install"
+    let make =
+      let m = getenv_or_empty "MAKE" in
+      if m = "" then "make" else m
+    in
+    exec [make] >>= fun () ->
+    exec [make; "install"]
 end

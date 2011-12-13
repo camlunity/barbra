@@ -39,7 +39,9 @@ let dbg fmt = ksprintf (fun s -> eprintf "DBG: %s\n%!" s) fmt
 
 let (</>) = Filename.concat
 
+(*
 let command fmt = Printf.ksprintf Res.Sys.command_ok fmt
+*)
 
 (* differs from Unix.create_process!
    usage example:
@@ -55,9 +57,8 @@ let exec args_list : (unit, exn) Res.res =
        let args = Array.of_list args_list in
        let prog = args.(0) in
        let fail reason = failwith
-           "error executing %S [| %s |]: %s"
-           prog (String.concat " ; " & List.map (sprintf "%S") &
-                 Array.to_list args)
+           "error executing [%s]: %s"
+           (String.concat "; " & List.map (sprintf "%S") args_list)
            reason
        in
        let pid = create_process prog args stdin stdout stderr in
@@ -74,3 +75,7 @@ let exec args_list : (unit, exn) Res.res =
              assert false  (* we are not waiting for stopped processes *)
        end
     )
+
+let exec_exn : string list -> unit = Res.exn_res %< exec
+
+let mkdir_p path = exec ["mkdir"; "-p"; path]
