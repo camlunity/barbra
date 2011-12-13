@@ -112,7 +112,13 @@ let makefile : install_type = object
     WithRes.bindres with_env_prepended
       ("CAML_LD_LIBRARY_PATH", G.stublibs_dir) & fun _old_env4 ->
     (if Sys.file_exists "configure" then
-        command "./configure"
+        if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0
+        then
+           (* if executable (which must not be shell script in general), *)
+           command "./configure"
+        else
+           (* otherwise assume it is a shell script: *)
+           command "sh ./configure"
      else
         return ()) >>= fun () ->
     command "make" >>= fun () ->
