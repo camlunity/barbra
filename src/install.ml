@@ -98,8 +98,8 @@ let makefile : install_type = object
   method install ~source_dir =
     let open WithM in
     let open Res in
-    WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
     let our_project_path = Sys.getcwd () in
+    WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
     WithRes.bindres with_env_prepended
       ("OCAMLPATH", our_project_path </> lib_dir) & fun _old_env1 ->
     WithRes.bindres with_env_prepended

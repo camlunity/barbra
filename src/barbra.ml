@@ -65,7 +65,9 @@ let install () =
     (* todo: убрать инициализацию отсюда, так как именно по наличию
              brb.conf мы можем судить, можно ли создавать эти
              директории и генерить конфиги findlib'у. *)
-    List.iter makedirs [src_dir; tmp_dir; bin_dir; lib_dir; etc_dir];
+    List.iter makedirs [src_dir; tmp_dir; bin_dir; lib_dir; etc_dir;
+                        (* NOTE(bobry): hack-hack-hack ... *)
+                        lib_dir </> "site-lib"];
     Install.generate_findlib_configs ();
     with_config go
   end
