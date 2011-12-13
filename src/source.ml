@@ -69,3 +69,21 @@ class vcs vcs_type url : source_type = object
         command "%s %s %s" vcs_cmd url dest_dir >>= fun () ->
         return dest_dir
 end
+
+
+class directory path : source_type = object
+
+  method is_available () = Filew.is_directory path
+
+  method fetch ~dest_dir =
+    let () = Global.create_dirs () in
+    let () = assert (Filew.is_directory path) in
+    if Sys.file_exists dest_dir
+    then failwith "directory#fetch: dest_dir=%S must be empty" dest_dir
+    else
+      let open Res in
+      command "cp -R %s %s" path dest_dir >>= fun () ->
+      return dest_dir
+end
+
+

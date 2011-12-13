@@ -1,6 +1,3 @@
-| barbra.ml: failwith "todo: copy local dir %S" local_path in
-| barbra.ml: failwith "todo: copy persistent dir %S to work dir"
-
 | удаление ненужных файлов и директорий (а именно, Bundled Temporary)
 
 | использование формы запуска не command fmt, а Unix.create_process

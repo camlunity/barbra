@@ -36,20 +36,16 @@ let install () =
           let project_path = Res.exn_res &
             source#fetch ~dest_dir:(tmp_dir </> hname)
           in go_temp_dir project_path
-        | Local (`Directory, local_path) ->
-          let () = failwith "todo: copy local dir %S" local_path in
-          let project_path = raise Exit in
-          go_temp_dir project_path
         | VCS (vcs_type, url) ->
           let source = new Source.vcs vcs_type url in
           let project_path = Res.exn_res &
             source#fetch ~dest_dir:(tmp_dir </> hname)
           in go_temp_dir project_path
-        | Bundled (Persistent, `Directory, project_path) ->
-          let () = failwith "todo: copy persistent dir %S to work dir"
-            project_path
-          in
-          let project_path = raise Exit in
+        | Local (`Directory, path)
+        | Bundled (Persistent, `Directory, path) ->
+          let source = new Source.directory path in
+          let project_path = Res.exn_res &
+            source#fetch ~dest_dir:(tmp_dir </> hname) in
           go_temp_dir project_path
         | Bundled (_, (#remote_type as archive_type), file_path) ->
           let source = new Source.archive archive_type file_path in
