@@ -40,3 +40,37 @@ let dbg fmt = ksprintf (fun s -> eprintf "DBG: %s\n%!" s) fmt
 let (</>) = Filename.concat
 
 let command fmt = Printf.ksprintf Res.Sys.command_ok fmt
+
+(* differs from Unix.create_process!
+   usage example:
+     exec [ "sh" ; "-c" ; "./configure" ]
+*)
+let exec args_list : (unit, exn) Res.res =
+  Res.catch_exn
+    (fun () ->
+       let open Unix in
+       if args_list = []
+       then failwith "error executing empty command"
+       else
+       let args = Array.of_list args_list in
+       let prog = args.(0) in
+       let fail reason = failwith
+           "error executing %S [| %s |]: %s"
+           prog (String.concat " ; " & List.map (sprintf "%S") &
+                 Array.to_list args)
+           reason
+       in
+       let pid = create_process prog args stdin stdout stderr in
+       let (pid', st) = waitpid [] pid in
+       let () = assert (pid = pid') in
+       begin match st with
+         | WEXITED code ->
+             if code <> 0
+             then fail & sprintf "exit code %i" code
+             else Res.return ()
+         | WSIGNALED s ->
+             fail & sprintf "killed by signal %i" s
+         | WSTOPPED _ ->
+             assert false  (* we are not waiting for stopped processes *)
+       end
+    )

@@ -115,10 +115,10 @@ let makefile : install_type = object
         if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0
         then
            (* if executable (which must not be shell script in general), *)
-           command "./configure"
+           exec ["./configure"]
         else
            (* otherwise assume it is a shell script: *)
-           command "sh ./configure"
+           exec ["sh" ; "./configure"]
      else
         return ()) >>= fun () ->
     command "make" >>= fun () ->
