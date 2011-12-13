@@ -108,6 +108,10 @@ let makefile : install_type = object
       ( "OCAMLFIND_CONF"
       , our_project_path </> etc_dir </> "findlib.conf"
       ) & fun _old_env3 ->
+    WithRes.bindres with_env
+      ( "OCAMLFIND_LDCONF"
+      , our_project_path </> lib_dir </> "ld.conf"
+      ) & fun _old_env4 ->
     let command fmt = Printf.ksprintf Sys.command_ok fmt in
     (let co = "configure" in
      if Sys.file_exists co
