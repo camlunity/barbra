@@ -41,7 +41,7 @@ class archive archive_type file_path : source_type = object
         (* If [dest_dir] contains a single directory, assume it *is* the
            source dir, otherwise return [dest_dir]. *)
         let files = Array.map ((</>) dest_dir) (Sys.readdir dest_dir)
-        in match List.filter Sys.is_directory (Array.to_list files) with
-          | [d] -> return d
+        in match Array.to_list files with
+          | [d] when Sys.is_directory d -> return d
           | _   -> return dest_dir
 end
