@@ -16,7 +16,7 @@ let etc_dir = dep_dir </> "etc"
 let lazy_dirs_creation = lazy
   (
     List.iter (fun p -> Res.exn_res & mkdir_p p) [
-      dep_dir; tmp_dir; bin_dir; lib_dir; etc_dir
+      base_dir; dep_dir; tmp_dir; bin_dir; lib_dir; etc_dir; stublibs_dir
     ]
   )
 
