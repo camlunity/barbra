@@ -70,6 +70,5 @@ let install () =
       (* NOTE(bobry): hack-hack-hack ... *)
       lib_dir </> "site-lib"
     ];
-    Install.generate_findlib_configs ();
     with_config go
   end
