@@ -31,12 +31,13 @@ let install () =
             (hname, Bundled
               (Temporary, (remote_type :> local_type), project_path))
             :: tconf
+        | Local ((#remote_type as archive_type), local_path) ->
+          let source = new Source.archive archive_type local_path in
+          let project_path = Res.exn_res &
+            source#fetch ~dest_dir:(tmp_dir </> hname)
+          in go_temp_dir project_path
         | Local (`Directory, local_path) ->
           let () = failwith "todo: copy local dir %S" local_path in
-          let project_path = raise Exit in
-          go_temp_dir project_path
-        | Local ((`Tar | `TarGz | `TarBzip2), local_path) ->
-          let () = failwith "todo: extract local archive %S" local_path in
           let project_path = raise Exit in
           go_temp_dir project_path
         | VCS (vcs_type, url) ->
