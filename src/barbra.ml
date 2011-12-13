@@ -7,11 +7,11 @@ include Global
 (** [with_config f] Executes a given function, passing parsed config
     file as an argument. *)
 let with_config f =
-  let conf = Filename.current_dir_name </> brb_conf in
+  let conf = base_dir </> brb_conf in
   if Sys.file_exists conf then
     f (Config.parse_config conf)
   else
-    failwith "can't find brb.conf in %S" Filename.current_dir_name
+    failwith "can't find brb.conf in %S" base_dir
 
 
 (* предполагаем, что текущая директория -- корень проекта *)
