@@ -39,10 +39,11 @@ let install () =
           let () = failwith "todo: extract local archive %S" local_path in
           let project_path = raise Exit in
           go_temp_dir project_path
-        | VCS (_vcs_type, url) ->
-          let () = failwith "todo: clone vcs %S" url in
-          let project_path = raise Exit in
-          go_temp_dir project_path
+        | VCS (vcs_type, url) ->
+          let source = new Source.vcs vcs_type url in
+          let project_path = Res.exn_res &
+            source#fetch ~dest_dir:(tmp_dir </> hname)
+          in go_temp_dir project_path
         | Bundled (Persistent, `Directory, project_path) ->
           let () = failwith "todo: copy persistent dir %S to work dir"
             project_path

@@ -43,3 +43,21 @@ class archive archive_type file_path : source_type = object
           | [d] when Sys.is_directory d -> return d
           | _ -> return dest_dir
 end
+
+
+class vcs vcs_type url : source_type = object
+  method is_available () = true  (* FIXME(bobry): stub! *)
+
+  method fetch ~dest_dir =
+    let () = Global.create_dirs () in
+    let vcs_cmd = match vcs_type with
+      | Git   -> "git clone --depth=1"
+      | Hg    -> "hg clone"
+      | SVN   -> "svn co"
+      | Darcs -> "darcs get --lazy"
+    in
+
+    let open Res in
+        command "%s %s %s" vcs_cmd url dest_dir >>= fun () ->
+        return dest_dir
+end
