@@ -52,7 +52,7 @@ let install () =
         | Bundled (_, (#remote_type as archive_type), file_path) ->
           let source = new Source.archive archive_type file_path in
           let project_path = Res.exn_res &
-            source#fetch ~dest_dir:(src_dir </> hname)
+            source#fetch ~dest_dir:(tmp_dir </> hname)
           in go_temp_dir project_path
         | Bundled (Temporary, `Directory, project_path) ->
           let () = Res.exn_res &
@@ -65,7 +65,7 @@ let install () =
     (* todo: убрать инициализацию отсюда, так как именно по наличию
              brb.conf мы можем судить, можно ли создавать эти
              директории и генерить конфиги findlib'у. *)
-    List.iter makedirs [src_dir; tmp_dir; bin_dir; lib_dir; etc_dir;
+    List.iter makedirs [tmp_dir; bin_dir; lib_dir; etc_dir;
                         (* NOTE(bobry): hack-hack-hack ... *)
                         lib_dir </> "site-lib"];
     Install.generate_findlib_configs ();

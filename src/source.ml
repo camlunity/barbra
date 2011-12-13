@@ -37,6 +37,7 @@ class archive archive_type file_path : source_type = object
         let command fmt = Printf.ksprintf Sys.command_ok fmt in
         command "mkdir -p %s" dest_dir >>= fun () ->
         command "%s %s -C %s" archive_cmd file_path dest_dir >>= fun () ->
+        command "rm -rf %s" file_path >>= fun () ->
 
         (* If [dest_dir] contains a single directory, assume it *is* the
            source dir, otherwise return [dest_dir]. *)
