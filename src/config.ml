@@ -53,11 +53,32 @@ let line_means_something line =
 let filter_comments s =
   stream_filter line_means_something s
 
+let check_dupes_v1 : db -> unit = fun db ->
+  let sorted = List.sort
+    (fun (n1, _p1) (n2, _p2) -> String.compare n1 n2) db in
+  begin match sorted with
+    | [] -> ()
+    | (hn, _hp) :: t ->
+        let rec loop hn t =
+          begin match t with
+            | [] -> ()
+            | (hn', _hp') :: t' ->
+                if hn = hn'
+                then failwith "brb.conf: duplicate dependency %S" hn
+                else loop hn' t'
+          end
+        in loop hn t
+  end
+
 let parse_config_v1 s =
   s
   (* |> Stream.map (fun line -> let () = dbg "line: %s" line in line) *)
   |> Stream.map_filter parse_line_opt
   |> Stream.to_list
+  |> fun r -> begin
+       check_dupes_v1 r;
+       r
+     end
 
 let remove_CR s =
   Stream.map
