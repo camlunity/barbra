@@ -1,9 +1,22 @@
 # OASIS_START
-# DO NOT EDIT (digest: 34a46702a15dd4f48a36aaf3e752db45)
+# DO NOT EDIT (digest: a4ef408eeb0925380876a623c7d7e676)
+# Ignore VCS directories, you can use the same kind of rule outside 
+# OASIS_START/STOP if you want to exclude directories that contains 
+# useless stuff for the build process
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
 # Executable test
+# Executable brb
 # Library barbra
 "src": include
-# Executable brb
 # OASIS_STOP
 
 <src/*.ml{,i}> : warn_A
