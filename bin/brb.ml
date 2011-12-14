@@ -10,15 +10,20 @@ let () =
   let run cmd =
     Res.exn_res (Install.run_with_env cmd)
   in
+  let usage () =
+    printf "usage: see TZ1\n"
+  in
   begin match List.tl (Array.to_list Sys.argv) with
-    | [] | ("build" :: _) ->
-        build ()
+    | [] | ("--help" | "help") :: _ ->
+        usage ()
     | ("--version" | "version") :: _ ->
         printf "%i\n" Barbra.version
-    | ("--help" | "help") :: _ ->
-        printf "usage: see TZ1\n"
+
+    | ("build" :: _) ->
+        build ()
     | "run" :: cmd ->
         run cmd
+
     | cmd :: _ ->
         eprintf "unknown command %S\n" cmd
   end
