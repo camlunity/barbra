@@ -19,6 +19,8 @@ let () =
         printf "usage: see TZ1\n"
     | "run" :: cmd ->
         run cmd
+    | cmd :: _ ->
+        eprintf "unknown command %S\n" cmd
   end
 
 
