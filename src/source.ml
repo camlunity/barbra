@@ -8,15 +8,45 @@ let ensure cmd =
   Sys.command (sprintf "sh -c 'which %s &> /dev/null'" cmd) = 0
 
 
+let remote_alternative
+ : ((url:string -> file_path:string -> (string, exn) Res.res, exn) Res.res)
+   Lazy.t
+ = 
+  lazy
+    (let open Res in
+     let ensure = wrap1 ensure in
+     ensure "wget" >>= function
+     | true -> return & fun ~url ~file_path ->
+         exec ["wget"; "-c"; "--no-check-certificate"; url; "-O"; file_path]
+         >>= fun () -> return file_path
+     | false ->
+     ensure "curl" >>= function
+     | true -> return & fun ~url ~file_path ->
+         exec ["curl"; "-sS"; "-f"; "-o"; file_path; url]
+         >>= fun () -> return file_path
+     | false ->
+         fail Not_found
+    )
+
+
 class remote url : source_type = object
-  method is_available () = List.for_all ensure ["wget"]
+
+  method is_available () =
+    let open Res in
+    exn_res & catch
+      (fun () -> Lazy.force remote_alternative >>= fun _ -> return true)
+      (function Not_found -> return false | e -> fail e)
 
   method fetch ~dest_dir =
     let () = Global.create_dirs () in
     let file_path = dest_dir </> Filename.basename url in
     let open Res in
-        exec ["wget"; "-c"; "--no-check-certificate"; url; "-O"; file_path]
-        >>= fun () -> return file_path
+    begin match Lazy.force remote_alternative with
+      | `Error Not_found ->
+          failwith "remote#is_available returned false, why calling #fetch?"
+      | `Error e -> fail e
+      | `Ok f -> f ~url ~file_path
+    end
 end
 
 
