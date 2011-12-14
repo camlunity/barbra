@@ -22,7 +22,7 @@ let cleanup () =
 (* assuming we are in project's root dir *)
 let install () =
   let rec go = function
-    | [] -> printf "Done"
+    | [] -> printf "Done\n%!"
     | (hname, htyp) :: tconf ->
       let go_temp_dir project_path =
         go &
