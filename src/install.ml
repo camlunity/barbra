@@ -91,23 +91,61 @@ let generate_findlib_configs () : unit =
 *)
 
 
+let the_env =
+  [ (`Prepend, "OCAMLPATH", G.lib_dir)
+  ; (`Prepend, "PATH", G.bin_dir)
+  ; (`Set, "OCAMLFIND_DESTDIR", G.lib_dir)
+  ; (`Prepend, "CAML_LD_LIBRARY_PATH", G.stublibs_dir)
+  ; (`Set, "OCAMLFIND_LDCONF", "ignore")
+  ]
+
+
+let do_write_env fn =
+  Filew.with_file_out_bin fn & fun outch ->
+  List.iter
+    (let set n v = fprintf outch "export %s=\"%s\"\n" n v in
+     function
+     | (`Set, n, v) -> set n v
+     | (`Prepend, n, v) ->
+         ( fprintf outch "test -z \"$%s\" || %s=\":$%s\"\n" n n n
+         ; set n (sprintf "%s$%s" v n)
+         )
+    )
+    the_env
+
+let lazy_write_env = lazy (do_write_env Global.env_sh)
+
+let write_env () = Lazy.force lazy_write_env
+
+
+let withres_env =
+  let open WithM.WithRes in
+  let open Res in
+  sequence
+    { cons = begin function
+        | (`Prepend, n, v) ->
+            with_env_prepended.cons (n, v) >>= fun r ->
+            return (`Prepend, r)
+        | (`Set, n, v) ->
+            with_env.cons (n, v) >>= fun r ->
+            return (`Set, r)
+      end
+    ; fin = begin function
+        | (`Prepend, old_env) -> with_env_prepended.fin old_env
+        | (`Set, old_env) -> with_env.fin old_env
+      end
+    }
+
+
 (* assuming we are in project's root dir *)
 let makefile : install_type = object
   method install ~source_dir =
     let () = Global.create_dirs () in
+    let () = write_env () in
     let open WithM in
     let open Res in
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
-    WithRes.bindres with_env_prepended
-      ("OCAMLPATH", G.lib_dir) & fun _old_env1 ->
-    WithRes.bindres with_env_prepended
-      ("PATH", G.bin_dir) & fun _old_env2 ->
-    WithRes.bindres with_env
-      ("OCAMLFIND_DESTDIR", G.lib_dir) & fun _old_env3 ->
-    WithRes.bindres with_env_prepended
-      ("CAML_LD_LIBRARY_PATH", G.stublibs_dir) & fun _old_env4 ->
-    WithRes.bindres with_env
-      ("OCAMLFIND_LDCONF", "ignore") & fun _old_env5 ->
+    WithRes.bindres withres_env the_env & fun _old_env ->
     (if Sys.file_exists "configure" then
         if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0
         then

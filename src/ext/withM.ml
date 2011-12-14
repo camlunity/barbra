@@ -76,6 +76,9 @@ module W (M : MonadError)
     value with_sys_chdir : withres string dir_abstract
     ;
 
+    value sequence : withres 'a 'r -> withres (list 'a) (list 'r)
+    ;
+
   end
  =
   struct
@@ -157,6 +160,33 @@ module W (M : MonadError)
              M.error
        }
     ;
+
+    value monad_sequence : list (M.m 'a) -> M.m (list 'a)
+     = fun lst ->
+         inner [] lst
+         where rec inner acc lst =
+           match lst with
+           [ [] -> M.return (List.rev acc)
+           | [hm :: tm] ->
+                hm >>= fun h ->
+                inner [h :: acc] tm
+           ]
+    ;
+
+    value sequence
+     : withres 'a 'r -> withres (list 'a) (list 'r)
+     = fun wr ->
+         (* todo: сделать более честно, тут сходу не вижу гарантий
+            освобождения тех wr.cons lst_item, которые были созданы
+            при wr.cons предыдущих элементов. *)
+         { cons = fun lst ->
+             monad_sequence (List.map wr.cons lst)
+         ; fin = fun lst ->
+             monad_sequence (List.rev_map wr.fin lst) >>= fun _unit_list ->
+             M.return ()
+         }
+    ;
+
 
   end
 ;

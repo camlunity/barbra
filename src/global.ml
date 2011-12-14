@@ -11,6 +11,7 @@ let bin_dir = dep_dir </> "bin"
 let lib_dir = dep_dir </> "lib"
 let stublibs_dir = lib_dir </> "stublibs"
 let etc_dir = dep_dir </> "etc"
+let env_sh = dep_dir </> "env.sh"
 
 
 let lazy_dirs_creation = lazy
