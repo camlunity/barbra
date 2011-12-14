@@ -7,10 +7,11 @@ let opts = Arg.align [
    "output version information and exit")
 ]
 
-let () = begin
+let () =
   Arg.parse opts ignore "brb";
   if !show_version then
     printf "%i\n" Barbra.version
-  else
+  else begin
+    Barbra.cleanup ();
     Barbra.install ()
-end
+  end

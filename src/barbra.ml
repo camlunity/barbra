@@ -14,6 +14,11 @@ let with_config f =
     failwith "can't find brb.conf in %S" base_dir
 
 
+let cleanup () =
+  if Filew.is_directory dep_dir then
+    exec_exn ["rm"; "-rf"; dep_dir]
+
+
 (* assuming we are in project's root dir *)
 let install () =
   let rec go = function
@@ -59,6 +64,4 @@ let install () =
         | Installed ->
           go tconf
       end
-  in begin
-    with_config go
-  end
+  in with_config go
