@@ -137,6 +137,13 @@ let withres_env =
     }
 
 
+let run_with_env cmd =
+  let open WithM in
+  let open Res in
+  WithRes.bindres withres_env the_env & fun _old_env ->
+  exec cmd
+
+
 (* assuming we are in project's root dir *)
 let makefile : install_type = object
   method install ~source_dir =
