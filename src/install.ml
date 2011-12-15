@@ -5,8 +5,8 @@ open Global
 module G = Global
 
 
-let getenv_or_empty env_name =
-  try Unix.getenv env_name with Not_found -> ""
+let getenv ?(default="") env_name =
+  try Unix.getenv env_name with Not_found -> default
 
 let prepend_path what_to_prepend old_path =
    sprintf "%s%s%s"
@@ -26,7 +26,7 @@ module WithCombs = struct
 (* variable that was not set will be restored to "". *)
 let with_env =
     { cons = (fun (env_name, new_val) ->
-        let old_val = getenv_or_empty env_name in
+        let old_val = getenv env_name in
         let () = Unix.putenv env_name new_val in
         return (env_name, old_val)
       )
@@ -39,7 +39,7 @@ let with_env =
 let with_env_prepended =
   premap
     (fun (name, what_to_prepend) ->
-       let old = getenv_or_empty name in
+       let old = getenv name in
        let new_var = prepend_path what_to_prepend old in
        (name, new_var)
     )
@@ -144,29 +144,26 @@ let run_with_env cmd =
   exec cmd
 
 
-(* assuming we are in project's root dir *)
 let makefile : install_type = object
   method install ~source_dir =
-    let () = Global.create_dirs () in
-    let () = write_env () in
     let open WithM in
-    let open Res in
-    WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
-    WithRes.bindres withres_env the_env & fun _old_env ->
-    (if Sys.file_exists "configure" then
-        if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0
-        then
-           (* if executable (which must not be shell script in general), *)
-           exec ["./configure"]
-        else
-           (* otherwise assume it is a shell script: *)
-           exec ["sh" ; "./configure"]
-     else
-        return ()) >>= fun () ->
-    let make =
-      let m = getenv_or_empty "MAKE" in
-      if m = "" then "make" else m
-    in
-    exec [make] >>= fun () ->
-    exec [make; "install"]
+    let open Res in begin
+      Global.create_dirs ();
+      write_env ();
+      Log.info "Starting Makefile build";
+
+      WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
+      WithRes.bindres withres_env the_env & fun _old_env ->
+        Unix.(
+          if Sys.file_exists "configure" then
+            if (stat "configure").st_perm land 0o100 <> 0 then
+              exec ["./configure"]
+            else
+              exec ["sh" ; "./configure"]
+          else
+            return ()) >>= fun () ->
+        let make = getenv ~default:"make" "MAKE" in
+        exec [make] >>= fun () ->
+        exec [make; "install"]
+    end
 end
