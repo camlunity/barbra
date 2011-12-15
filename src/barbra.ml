@@ -11,7 +11,7 @@ let with_config f =
   if Sys.file_exists conf then
     f (Config.parse_config conf)
   else
-    failwith "can't find brb.conf in %S" base_dir
+    Log.error "can't find brb.conf in %S" base_dir
 
 
 let cleanup () =
@@ -22,7 +22,7 @@ let cleanup () =
 (* assuming we are in project's root dir *)
 let install () =
   let rec go = function
-    | [] -> printf "Done\n%!"
+    | [] -> Log.info "Done!"
     | (hname, htyp) :: tconf ->
       let go_temp_dir project_path =
         go &

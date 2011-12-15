@@ -25,7 +25,7 @@ let parse_line_opt s =
           | "bundled-tar-bz2" -> Bundled (Persistent, `TarBzip2, src)
           | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
             VCS (vcs_type_of_string typ, src)
-          | _ -> failwith "unsupported delivery method: %S" typ
+          | _ -> Log.error "unsupported package type: %S" typ
         in (name, package)
       )
     else
@@ -64,7 +64,7 @@ let check_dupes_v1 : db -> unit = fun db ->
             | [] -> ()
             | (hn', _hp') :: t' ->
                 if hn = hn'
-                then failwith "brb.conf: duplicate dependency %S" hn
+                then Log.error "brb.conf: duplicate dependency %S" hn
                 else loop hn' t'
           end
         in loop hn t
@@ -92,15 +92,14 @@ let remove_CR s =
 
 let get_config_version s =
   begin match Stream.next_opt s with
-      None -> failwith "empty config"
+      None -> Log.error "brb.conf empty!"
     | Some line ->
         try
           (* let () = dbg "get_config_version: line = %S" line in *)
           Scanf.sscanf (String.lowercase line) " version %s "
             (fun v -> v)
         with Scanf.Scan_failure _ ->
-          failwith "first non-commented line of brb.conf should contain \
-                    \"version N\" directive"
+          Log.error "brb.conf: missing version!"
   end
 
 let parse_stream s =
@@ -109,8 +108,8 @@ let parse_stream s =
   |> filter_comments
   |> fun s ->
        begin match get_config_version s with
-         "1" | _ -> parse_config_v1 s
-       (* | v -> failwith "unknown config version %S" v *)
+         | "1" -> parse_config_v1 s
+         | v  -> Log.error "brb.conf: unknown version %S" v
        end
 
 let parse_config filename =

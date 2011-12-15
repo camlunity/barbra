@@ -25,6 +25,14 @@ let vcs_type_of_string s = match String.lowercase s with
   | "svn"   -> SVN
   | _ -> failwith "unknown VCS type %S" s
 
+and string_of_vcs_type = function
+  | Git     -> "git"
+  | Hg      -> "mercurial"
+  | Bzr     -> "bazaar"
+  | Darcs   -> "darcs"
+  | CVS     -> "cvs"
+  | SVN     -> "subversion"
+
 
 type ('a, 'e) res = ('a, 'e) Res.res
 
