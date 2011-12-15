@@ -26,7 +26,7 @@ let cfg_res = [
 let test_parse_lines () =
   let config = Config.parse_string cfg in
   let r = cfg_res = config in
-  ( (if not r then List.iter (fun (n,_) -> dbg "pkg: %S" n) config else ())
+  ( (if not r then List.iter (fun (n,_) -> printf "pkg: %S" n) config else ())
   ; r
   )
 

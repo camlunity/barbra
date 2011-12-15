@@ -33,10 +33,6 @@ let list_all lst =
 include Cd_Ops
 module Stream = Am_Stream.Stream
 
-include Printf
-
-let dbg fmt = ksprintf (fun s -> eprintf "DBG: %s\n%!" s) fmt
-
 let (</>) = Filename.concat
 
 (** [exec args] Executes a given command in a separate process;

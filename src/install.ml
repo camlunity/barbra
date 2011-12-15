@@ -8,11 +8,9 @@ module G = Global
 let getenv ?(default="") env_name =
   try Unix.getenv env_name with Not_found -> default
 
-let prepend_path what_to_prepend old_path =
-   sprintf "%s%s%s"
-     what_to_prepend
-     (if old_path = "" then "" else ":")
-     old_path
+let prepend_path what_to_prepend = function
+  | "" -> what_to_prepend
+  | old_path -> Printf.sprintf "%s:%s" what_to_prepend old_path
 
 let line_of_process cmdline =
   Filew.with_process_in cmdline & fun inch ->
@@ -101,6 +99,7 @@ let the_env =
 
 
 let do_write_env fn =
+  let open Printf in
   Filew.with_file_out_bin fn & fun outch ->
   List.iter
     (let set n v = fprintf outch "export %s=\"%s\"\n" n v in
