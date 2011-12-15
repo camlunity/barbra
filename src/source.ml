@@ -59,16 +59,16 @@ class archive archive_type file_path : source_type = object
       Global.create_dirs ();
       Log.info "Extracting %s to %S" file_path dest_dir;
 
-      mkdir_p dest_dir >>= fun () ->
-        exec (archive_cmd @ [file_path; "-C"; dest_dir]) >>= fun () ->
-        (Res.wrap1 Sys.remove file_path) >>= fun () ->
+      exec ["mkdir"; "-p"; dest_dir] >>= fun () ->
+      exec (archive_cmd @ [file_path; "-C"; dest_dir]) >>= fun () ->
+      (Res.wrap1 Sys.remove file_path) >>= fun () ->
 
-        (* If [dest_dir] contains a single directory, assume it *is* the
-           source dir, otherwise return [dest_dir]. *)
-        let files = Array.map ((</>) dest_dir) (Sys.readdir dest_dir)
-        in match Array.to_list files with
-          | [d] when Sys.is_directory d -> return d
-          | _ -> return dest_dir
+      (* If [dest_dir] contains a single directory, assume it *is* the
+         source dir, otherwise return [dest_dir]. *)
+      let files = Array.map ((</>) dest_dir) (Sys.readdir dest_dir)
+      in match Array.to_list files with
+        | [d] when Sys.is_directory d -> return d
+        | _ -> return dest_dir
     end
 end
 

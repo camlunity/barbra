@@ -1,39 +1,14 @@
-(* values that are used in the project *)
-
-(***************************)
-
 include ExtString
+include Cd_Ops
+
+module Stream = Am_Stream.Stream
 
 let failwith fmt = Printf.ksprintf failwith fmt
 
-(* resource management operations *)
-let try_finally action finally =
-  try
-    let result = action () in
-      finally ();
-      result;
-  with x -> finally (); raise x
-
-let with_resource resource action post =
-  try_finally (fun () -> action resource) (fun () -> post resource)
-
-let with_file_in filename action =
-  with_resource (open_in filename) action close_in
-
 let identity x = x
 
-let list_all lst =
-(*
-  List.fold_left (fun acc el -> acc && el) true lst
-
-  more efficiently, stops on first "false":
-*)
-  List.for_all identity lst
-
-include Cd_Ops
-module Stream = Am_Stream.Stream
-
 let (</>) = Filename.concat
+
 
 (** [exec args] Executes a given command in a separate process;
     a command is given a a list of arguments, for example:
@@ -64,7 +39,3 @@ let exec args = Res.catch_exn (fun () ->
             assert false  (* we are not waiting for stopped processes *)
       end
 )
-
-let exec_exn : string list -> unit = Res.exn_res %< exec
-
-let mkdir_p path = exec ["mkdir"; "-p"; path]

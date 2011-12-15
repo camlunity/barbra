@@ -16,7 +16,7 @@ let with_config f =
 
 let cleanup () =
   if Filew.is_directory dep_dir then
-    exec_exn ["rm"; "-rf"; dep_dir]
+    Res.exn_res (exec ["rm"; "-rf"; dep_dir])
 
 
 (* assuming we are in project's root dir *)

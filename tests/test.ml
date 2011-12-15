@@ -38,6 +38,6 @@ let tests = [
 
 exception TestFailed
 let () =
-  if list_all (List.map (fun func -> func ()) tests)
+  if List.for_all identity (List.map (fun func -> func ()) tests)
   then print_endline "Test passed"
   else raise TestFailed
