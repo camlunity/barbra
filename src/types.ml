@@ -38,7 +38,7 @@ type ('a, 'e) res = ('a, 'e) Res.res
 
 
 class type source_type = object
-  method is_available : unit -> bool
+  val is_available : bool
   (** Returns [true] if this source type handler is available for
       use, i. e. all the required binaries are installed and [false]
       otherwise. *)

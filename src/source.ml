@@ -7,7 +7,13 @@ open Common
 let ensure cmd =
   Sys.command (sprintf "sh -c 'which %s &> /dev/null'" cmd) = 0
 
+(** [ensure cmd] Same as [ensure], but exits if a given command
+    [cmd] is missing. *)
+let ensure_exn cmd =
+  ensure cmd || Log.error "Missing executable: %S" cmd
 
+
+(** FIXME(bobry): switch to GET from libwww-perl? *)
 let remote_fn = lazy (
   let open Res in begin
     match (ensure "wget", ensure "curl") with
@@ -21,9 +27,10 @@ let remote_fn = lazy (
 
 
 class remote url : source_type = object
-  method is_available () = match Lazy.force remote_fn with
+  val is_available = match Lazy.force remote_fn with
     | `Ok _ -> true
-    | `Error _ -> false
+    | `Error _ ->
+      Log.error "Missing executable for 'remote' backend!"
 
   method fetch ~dest_dir =
     let file_path = dest_dir </> Filename.basename url in
@@ -33,16 +40,13 @@ class remote url : source_type = object
 
       match Lazy.force remote_fn with
         | `Ok f -> f ~url ~file_path >>= fun () -> return file_path
-        | `Error _ ->
-          (* TODO(bobry): emit an error message, once we add
-             #is_available checking to 'Barbra.install'. *)
-          failwith "remote#is_available returned false, why calling #fetch?"
+        | `Error _ -> assert false  (* impossible *)
     end
 end
 
 
 class archive archive_type file_path : source_type = object
-  method is_available () = List.for_all ensure ["tar"]
+  val is_available = ensure_exn "tar"
 
   method fetch ~dest_dir =
     let archive_cmd = match archive_type with
@@ -70,7 +74,7 @@ end
 
 
 class vcs vcs_type url : source_type = object
-  method is_available () = ensure & match vcs_type with
+  val is_available = ensure_exn & match vcs_type with
     | Git   -> "git"
     | Hg    -> "hg"
     | Bzr   -> "bzr"
@@ -100,16 +104,15 @@ end
 
 
 class directory path : source_type = object
-
-  method is_available () = Filew.is_directory path
+  val is_available = Filew.is_directory path ||
+    Log.error "Not a directory: %S" path
 
   method fetch ~dest_dir =
-    let () = Global.create_dirs () in
-    let () = assert (Filew.is_directory path) in
-    if Sys.file_exists dest_dir
-    then failwith "directory#fetch: dest_dir=%S must be empty" dest_dir
-    else
-      let open Res in
+    let open Res in begin
+      Global.create_dirs ();
+
+      (* FIXME(bobry): do we need to check for existance? *)
       exec ["cp"; "-R"; path; dest_dir] >>= fun () ->
       return dest_dir
+    end
 end
