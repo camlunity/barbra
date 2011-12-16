@@ -2,35 +2,31 @@ open Types
 open Printf
 open Common
 
-(** [ensure cmd] Returns [true] if a given [command] is available
-    on the host system and [false] otherwise. *)
-let ensure cmd =
-  Sys.command (sprintf "sh -c 'which %s &> /dev/null'" cmd) = 0
 
 (** [ensure cmd] Same as [ensure], but exits if a given command
     [cmd] is missing. *)
 let ensure_exn cmd =
-  ensure cmd || Log.error "Missing executable: %S" cmd
+  Syscaps.ensure cmd || Log.error "Missing executable: %S" cmd
 
-
-(** FIXME(bobry): switch to GET from libwww-perl? *)
-let remote_fn = lazy (
-  let open Res in begin
-    match (ensure "wget", ensure "curl") with
-      | (true, _) -> return & fun ~url ~file_path ->
+let remotes =
+  [ ( `Executable "wget"
+    , fun ~url ~file_path ->
         exec ["wget"; "-c"; "--no-check-certificate"; url; "-O"; file_path]
-      | (_, true) -> return & fun ~url ~file_path ->
+    )
+  ; ( `Executable "curl"
+    , fun ~url ~file_path ->
         exec ["curl"; "-sS"; "-f"; "-o"; file_path; url]
-      | _ -> fail Not_found
-  end
-)
+    )
+  ]
+
+let remote_fn = lazy (Syscaps.first remotes)
 
 
 class remote url : source_type = object
   val is_available = match Lazy.force remote_fn with
     | `Ok _ -> true
-    | `Error _ ->
-      Log.error "Missing executable for 'remote' backend!"
+    | `Error () ->
+        Log.error "Missing executable for 'remote' backend!"
 
   method fetch ~dest_dir =
     let file_path = dest_dir </> Filename.basename url in
@@ -40,13 +36,14 @@ class remote url : source_type = object
 
       match Lazy.force remote_fn with
         | `Ok f -> f ~url ~file_path >>= fun () -> return file_path
-        | `Error _ -> assert false  (* impossible *)
+        | `Error () -> assert false  (* impossible *)
     end
 end
 
 
 class archive archive_type file_path : source_type = object
   val is_available = ensure_exn "tar"
+    (* todo: replace with Syscaps when more archive extractors will exist *)
 
   method fetch ~dest_dir =
     let archive_cmd = match archive_type with

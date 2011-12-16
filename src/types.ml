@@ -52,3 +52,8 @@ class type install_type = object
   method install : source_dir:string -> (unit, exn) res
   (** Installs packages, located in [source_dir]. *)
 end
+
+
+type cap =
+  [ `Executable of string
+  ]
