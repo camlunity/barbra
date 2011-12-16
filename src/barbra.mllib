@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: c4ad0dcffcab3157c232f5721c9d1ae0)
+# DO NOT EDIT (digest: 5e202e3193ae6f5228d0c6bbf1b9db24)
 Barbra
 Config
 Source
@@ -7,4 +7,5 @@ Install
 Global
 Types
 Log
+Syscaps
 # OASIS_STOP

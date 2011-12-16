@@ -2,28 +2,26 @@ open Types
 open Printf
 open Common
 
-(** [ensure cmd] Returns [true] if a given [command] is available
-    on the host system and [false] otherwise. *)
-let ensure cmd =
-  Sys.command (sprintf "sh -c 'which %s &> /dev/null'" cmd) = 0
 
-
-let remote_fn = lazy (
-  let open Res in begin
-    match (ensure "wget", ensure "curl") with
-      | (true, _) -> return & fun ~url ~file_path ->
+let remotes =
+  [ ( `Executable "wget"
+    , fun ~url ~file_path ->
         exec ["wget"; "-c"; "--no-check-certificate"; url; "-O"; file_path]
-      | (_, true) -> return & fun ~url ~file_path ->
+    )
+  ; ( `Executable "curl"
+    , fun ~url ~file_path ->
         exec ["curl"; "-sS"; "-f"; "-o"; file_path; url]
-      | _ -> fail Not_found
-  end
-)
+    )
+  ]
+
+let remote_fn = lazy (Syscaps.first remotes)
 
 
 class remote url : source_type = object
-  method is_available () = match Lazy.force remote_fn with
+  method is_available () = begin match Lazy.force remote_fn with
     | `Ok _ -> true
-    | `Error _ -> false
+    | `Error () -> false
+  end
 
   method fetch ~dest_dir =
     let file_path = dest_dir </> Filename.basename url in
@@ -33,7 +31,7 @@ class remote url : source_type = object
 
       match Lazy.force remote_fn with
         | `Ok f -> f ~url ~file_path >>= fun () -> return file_path
-        | `Error _ ->
+        | `Error () ->
           (* TODO(bobry): emit an error message, once we add
              #is_available checking to 'Barbra.install'. *)
           failwith "remote#is_available returned false, why calling #fetch?"
@@ -42,7 +40,8 @@ end
 
 
 class archive archive_type file_path : source_type = object
-  method is_available () = List.for_all ensure ["tar"]
+  method is_available () = Syscaps.ensure "tar"
+    (* todo: replace with Syscaps when more archive extractors will exist *)
 
   method fetch ~dest_dir =
     let archive_cmd = match archive_type with
@@ -70,7 +69,7 @@ end
 
 
 class vcs vcs_type url : source_type = object
-  method is_available () = ensure & match vcs_type with
+  method is_available () = Syscaps.ensure & match vcs_type with
     | Git   -> "git"
     | Hg    -> "hg"
     | Bzr   -> "bzr"
