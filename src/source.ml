@@ -17,6 +17,15 @@ let remotes =
     , fun ~url ~file_path ->
         exec ["curl"; "-sS"; "-f"; "-o"; file_path; url]
     )
+  ; ( `Executable "GET"
+       (* note: it's acceptable only for http://, maybe we should check it. *)
+    , fun ~url ~file_path ->
+        exec ["sh"; "-c";
+          sprintf "GET -t 30 %s > %s"
+            (Filename.quote url)
+            (Filename.quote file_path)
+        ]
+    )
   ]
 
 let remote_fn = lazy (Syscaps.first remotes)
