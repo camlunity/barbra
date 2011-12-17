@@ -19,14 +19,19 @@ let exec args = Res.catch_exn (fun () ->
   let open UnixLabels in match args with
     | [] -> failwith "can't execute empty command!"
     | (prog :: _) as args ->
+      let cmd = String.concat " " args in
+      let () = Log.info "Running command %S" cmd in
+      (* ^^^ logging about future actions must be done before making them! *)
+
+      let () = Log.debug "Running command's argv: [%s]" &
+        String.concat " ; " &
+        List.map (Printf.sprintf "%S") args in
+
       let pid = create_process
         ~prog
         ~args:(Array.of_list args)
-        ~stdin ~stdout ~stderr
-      and cmd = String.concat " " args in
+        ~stdin ~stdout ~stderr in
       begin
-        Log.info "Running command %S" cmd;
-
         match waitpid ~mode:[] pid with
           | (pid', _) when pid' <> pid -> assert false
           | (_, WEXITED code) ->
