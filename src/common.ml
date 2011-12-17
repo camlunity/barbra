@@ -13,7 +13,7 @@ let (</>) = Filename.concat
 (** [exec args] Executes a given command in a separate process;
     a command is given a a list of arguments, for example:
 
-    let () = exec ["sh"; "-c"; "./configure"];;
+    let _ : (unit, exn) Res.res = exec ["sh"; "-c"; "./configure"];;
 *)
 let exec args = Res.catch_exn (fun () ->
   let open UnixLabels in match args with

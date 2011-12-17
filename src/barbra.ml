@@ -60,6 +60,9 @@ let install () =
         | Bundled (Temporary, `Directory, project_path) ->
           let () = Res.exn_res &
             Install.makefile#install ~source_dir:project_path in
+	  Log.info "Removing successfully builded %s\n" project_path;
+	  (* kakadu recommends to allow user to decide: remove bundled temporary files or not. *)
+	  let () = Res.exn_res & Common.exec ["rm" ; "-rf"; project_path] in
           go & (hname, Installed) :: tconf
         | Installed ->
           go tconf
