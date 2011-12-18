@@ -26,15 +26,15 @@ let install () =
     | (hname, htyp) :: tconf ->
       let go_temp_dir project_path =
         go &
-          (hname, Bundled (Temporary, `Directory, project_path))
+          (hname, Temporary (`Directory, project_path))
           :: tconf
       in begin match htyp with
         | Remote (remote_type, url) ->
           let source = new Source.remote url in
           let project_path = Res.exn_res & source#fetch ~dest_dir:tmp_dir
           in go &
-            (hname, Bundled
-              (Temporary, (remote_type :> local_type), project_path))
+            (hname,
+               Temporary ((remote_type :> local_type), project_path))
             :: tconf
         | Local ((#remote_type as archive_type), local_path) ->
           let source = new Source.archive archive_type local_path in
@@ -47,12 +47,20 @@ let install () =
             source#fetch ~dest_dir:(tmp_dir </> hname)
           in go_temp_dir project_path
         | Local (`Directory, path)
-        | Bundled (Persistent, `Directory, path) ->
+        | Bundled (`Directory, path) ->
           let source = new Source.directory path in
           let project_path = Res.exn_res &
             source#fetch ~dest_dir:(tmp_dir </> hname) in
           go_temp_dir project_path
-        | Bundled (_, (#remote_type as archive_type), file_path) ->
+        | Bundled ((#remote_type as archive_type), file_path) ->
+          let source = new Source.archive archive_type file_path in
+          let project_path = Res.exn_res &
+            source#fetch ~dest_dir:(tmp_dir </> hname)
+          in begin
+            Log.debug "Keeping successfully unpacked bundled %S" file_path;
+            go_temp_dir project_path
+          end
+        | Temporary ((#remote_type as archive_type), file_path) ->
           let source = new Source.archive archive_type file_path in
           let project_path = Res.exn_res &
             source#fetch ~dest_dir:(tmp_dir </> hname)
@@ -61,7 +69,7 @@ let install () =
             Sys.remove file_path;
             go_temp_dir project_path
           end
-        | Bundled (Temporary, `Directory, project_path) ->
+        | Temporary (`Directory, project_path) ->
           let () = Res.exn_res &
             Install.makefile#install ~source_dir:project_path in
           Log.info "Removing successfully built %S" project_path;

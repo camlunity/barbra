@@ -19,10 +19,10 @@ let parse_line_opt s =
           | "local-tar-bz2" -> Local (`TarBzip2, src)
           | "local-tar" -> Local (`Tar, src)
           | "local-dir" -> Local (`Directory, src)
-          | "bundled-dir" -> Bundled (Persistent, `Directory, src)
-          | "bundled-tar" -> Bundled (Persistent, `Tar, src)
-          | "bundled-tar-gz" -> Bundled (Persistent, `TarGz, src)
-          | "bundled-tar-bz2" -> Bundled (Persistent, `TarBzip2, src)
+          | "bundled-dir" -> Bundled (`Directory, src)
+          | "bundled-tar" -> Bundled (`Tar, src)
+          | "bundled-tar-gz" -> Bundled (`TarGz, src)
+          | "bundled-tar-bz2" -> Bundled (`TarBzip2, src)
           | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
             VCS (vcs_type_of_string typ, src)
           | _ -> Log.error "unsupported package type: %S" typ
