@@ -56,13 +56,18 @@ let install () =
           let source = new Source.archive archive_type file_path in
           let project_path = Res.exn_res &
             source#fetch ~dest_dir:(tmp_dir </> hname)
-          in go_temp_dir project_path
+          in begin
+            Log.info "Removing successfully unpacked %S" file_path;
+            Sys.remove file_path;
+            go_temp_dir project_path
+          end
         | Bundled (Temporary, `Directory, project_path) ->
           let () = Res.exn_res &
             Install.makefile#install ~source_dir:project_path in
-	  Log.info "Removing successfully builded %s\n" project_path;
-	  (* kakadu recommends to allow user to decide: remove bundled temporary files or not. *)
-	  let () = Res.exn_res & Common.exec ["rm" ; "-rf"; project_path] in
+          Log.info "Removing successfully built %S" project_path;
+          (* kakadu recommends to allow user to decide: remove bundled
+             temporary files or not. *)
+          let () = Res.exn_res & Common.exec ["rm" ; "-rf"; project_path] in
           go & (hname, Installed) :: tconf
         | Installed ->
           go tconf

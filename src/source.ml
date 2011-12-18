@@ -67,7 +67,6 @@ class archive archive_type file_path : source_type = object
 
       exec ["mkdir"; "-p"; dest_dir] >>= fun () ->
       exec (archive_cmd @ [file_path; "-C"; dest_dir]) >>= fun () ->
-      (Res.wrap1 Sys.remove file_path) >>= fun () ->
 
       (* If [dest_dir] contains a single directory, assume it *is* the
          source dir, otherwise return [dest_dir]. *)
