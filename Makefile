@@ -40,4 +40,4 @@ setup.data:
 run:
 	$(MAKE) clean
 	$(MAKE) all
-	OCAMLRUNPARAM=b ./brb.byte build
+	OCAMLRUNPARAM=b ./brb.byte rebuild-deps

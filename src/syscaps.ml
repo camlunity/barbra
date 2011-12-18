@@ -8,7 +8,7 @@ open Res
     with single option [opt] (for example, it can be "--version" option),
     exit code "0" is the sign of [cmd] is present. *)
 let ensure cmd opt =
-  127 <> Res.exn_res (exec_exitcode [cmd; opt])
+  127 <> Res.exn_res (exec_exitcode ~redirects:`Nul [cmd; opt])
 
 
 let rec first = function
