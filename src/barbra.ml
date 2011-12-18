@@ -20,9 +20,9 @@ let cleanup () =
 
 
 (* assuming we are in project's root dir *)
-let install () =
+let build_deps () =
   let rec go = function
-    | [] -> Log.info "Done!"
+    | [] -> Log.info "Dependencies built successfully!"
     | (hname, htyp) :: tconf ->
       let go_temp_dir project_path =
         go &
@@ -81,3 +81,41 @@ let install () =
           go tconf
       end
   in with_config go
+
+
+let build_project () =
+  let () = Log.info "Building the project (from %S)" base_dir in
+  let () = Res.exn_res &
+    Install.makefile#install ~source_dir:base_dir in
+  Log.info "Project built succesfully!"
+
+
+let deps_are_built () = Filew.is_directory dep_dir
+
+
+let build_gen ~proj () =
+  let () =
+    if deps_are_built ()
+    then ()
+    else build_deps ()
+  in
+  if proj then build_project () else ()
+
+
+let rebuild_gen ~proj () = begin
+  cleanup ();
+  build_gen ~proj ();
+end
+
+
+let build () = build_gen ~proj:true ()
+
+let rebuild () = rebuild_gen ~proj:true ()
+
+let build_deps () = build_gen ~proj:false ()
+
+let rebuild_deps () = rebuild_gen ~proj:false ()
+
+
+let run_with_env cmd =
+  Res.exn_res (Install.run_with_env cmd)
