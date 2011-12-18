@@ -70,3 +70,5 @@ let exec args =
        | code ->
            Log.error "Command %S terminated with exit code %i" cmd code
     )
+
+let exec_exn cmd = Res.exn_res (exec cmd)

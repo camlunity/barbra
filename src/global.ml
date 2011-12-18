@@ -17,7 +17,7 @@ let env_sh = dep_dir </> "env.sh"
 (** [create_dirs ()] Create initial directory structure for [brb]. *)
 let create_dirs =
   let create_dirs_lazy = lazy (
-    List.iter (fun dir -> Res.exn_res & exec ["mkdir"; "-p"; dir]) [
+    Fs_util.make_directories_p [
       base_dir; dep_dir; tmp_dir; bin_dir; lib_dir; etc_dir; stublibs_dir
     ]
   ) in fun () -> Lazy.force create_dirs_lazy

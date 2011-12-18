@@ -67,7 +67,7 @@ class archive archive_type file_path : source_type = object
       Global.create_dirs ();
       Log.info "Extracting %s to %S" file_path dest_dir;
 
-      exec ["mkdir"; "-p"; dest_dir] >>= fun () ->
+      (Res.wrap1 Fs_util.make_directory_p dest_dir) >>= fun () ->
       exec (archive_cmd @ [file_path; "-C"; dest_dir]) >>= fun () ->
 
       (* If [dest_dir] contains a single directory, assume it *is* the
@@ -133,7 +133,11 @@ class directory path : source_type = object
       Global.create_dirs ();
 
       (* FIXME(bobry): do we need to check for existance? *)
-      exec ["cp"; "-R"; path; dest_dir] >>= fun () ->
-      return dest_dir
+      if Sys.file_exists dest_dir
+      then Log.error "Source#directory: destination directory (%S) \
+                      must not exist" dest_dir
+      else
+        Fs_util.copy_directory_res ~src:path ~dst:dest_dir >>= fun () ->
+        return dest_dir
     end
 end

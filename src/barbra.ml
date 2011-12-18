@@ -16,7 +16,7 @@ let with_config f =
 
 let cleanup () =
   if Filew.is_directory dep_dir then
-    Res.exn_res (exec ["rm"; "-rf"; dep_dir])
+    Fs_util.remove_directory_recursive dep_dir
 
 
 (* assuming we are in project's root dir *)
@@ -75,7 +75,7 @@ let build_deps () =
           Log.info "Removing successfully built %S" project_path;
           (* kakadu recommends to allow user to decide: remove bundled
              temporary files or not. *)
-          let () = Res.exn_res & Common.exec ["rm" ; "-rf"; project_path] in
+          let () = Fs_util.remove_directory_recursive project_path in
           go & (hname, Installed) :: tconf
         | Installed ->
           go tconf
