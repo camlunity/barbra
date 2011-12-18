@@ -5,19 +5,19 @@ open Common
 
 (** [ensure cmd] Same as [ensure], but exits if a given command
     [cmd] is missing. *)
-let ensure_exn cmd =
-  Syscaps.ensure cmd || Log.error "Missing executable: %S" cmd
+let ensure_exn cmd opt =
+  Syscaps.ensure cmd opt || Log.error "Missing executable: %S" cmd
 
 let remotes =
-  [ ( `Executable "wget"
+  [ ( `Executable ("wget", "--version")
     , fun ~url ~file_path ->
         exec ["wget"; "-c"; "--no-check-certificate"; url; "-O"; file_path]
     )
-  ; ( `Executable "curl"
+  ; ( `Executable ("curl", "--version")
     , fun ~url ~file_path ->
         exec ["curl"; "-sS"; "-f"; "-o"; file_path; url]
     )
-  ; ( `Executable "GET"
+  ; ( `Executable ("GET", "-v")
        (* note: it's acceptable only for http://, maybe we should check it. *)
     , fun ~url ~file_path ->
         exec ["sh"; "-c";
@@ -50,9 +50,11 @@ class remote url : source_type = object
 end
 
 
+let has_tar = lazy (ensure_exn "tar" "--version")
+(* todo: replace with Syscaps when more archive extractors will exist *)
+
 class archive archive_type file_path : source_type = object
-  val is_available = ensure_exn "tar"
-    (* todo: replace with Syscaps when more archive extractors will exist *)
+  val is_available = Lazy.force has_tar
 
   method fetch ~dest_dir =
     let archive_cmd = match archive_type with
@@ -78,14 +80,28 @@ class archive archive_type file_path : source_type = object
 end
 
 
+let list_assoc_opt a b = try some & List.assoc a b with Not_found -> None
+
+let has_vcs =
+  let f cmd opt = lazy (ensure_exn cmd opt) in
+  let v = "--version" in
+  let lst =
+    [ Git   , f "git" v
+    ; Hg    , f "hg" v
+    ; Bzr   , f "bzr" "version"
+    ; Darcs , f "darcs" v
+    ; SVN   , f "svn" v
+    ; CVS   , f "cvs" "-v"
+    ]
+  in
+    fun vcs_type ->
+      match list_assoc_opt vcs_type lst with
+      | None -> Log.error "internal error: Source.has_vcs list is incomplete"
+      | Some l -> Lazy.force l
+
+
 class vcs vcs_type url : source_type = object
-  val is_available = ensure_exn & match vcs_type with
-    | Git   -> "git"
-    | Hg    -> "hg"
-    | Bzr   -> "bzr"
-    | Darcs -> "darcs"
-    | SVN   -> "svn"
-    | CVS   -> "cvs"
+  val is_available = has_vcs vcs_type
 
   method fetch ~dest_dir =
     let vcs_cmd = match vcs_type with

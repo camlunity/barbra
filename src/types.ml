@@ -55,5 +55,5 @@ end
 
 
 type cap =
-  [ `Executable of string
+  [ `Executable of (string * string)  (* (executable_name, probe_option) *)
   ]
