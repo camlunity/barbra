@@ -136,10 +136,15 @@ let withres_env =
     }
 
 
+let with_the_env f =
+  withres_env the_env & fun _old_env ->
+  f ()
+
+
 let run_with_env cmd =
   let open WithM in
   let open Res in
-  WithRes.bindres withres_env the_env & fun _old_env ->
+  with_the_env & fun () ->
   exec cmd
 
 
@@ -152,7 +157,7 @@ let makefile : install_type = object
       Log.info "Starting Makefile build";
 
       WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
-      WithRes.bindres withres_env the_env & fun _old_env ->
+      with_the_env & fun () ->
         Unix.(
           if Sys.file_exists "configure" then
             if (stat "configure").st_perm land 0o100 <> 0 then
