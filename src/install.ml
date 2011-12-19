@@ -167,7 +167,7 @@ let makefile : install_type = object
           else
             return ()) >>= fun () ->
         let make = getenv ~default:"make" "MAKE" in
-        exec [make] >>= fun () ->
+        exec [make; "all"] >>= fun () ->
         exec [make; "install"]
     end
 end
