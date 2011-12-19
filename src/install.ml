@@ -159,12 +159,19 @@ let makefile : install_type = object
       WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
       with_the_env & fun () ->
         Unix.(
-          WithRes.bindres with_env ("prefix", dep_dir) & fun _old_env ->
           if Sys.file_exists "configure" then
+            let add_opts =
+              if Sys.file_exists "_oasis"
+                   (* maybe we should always pass --prefix,
+                      not only for oasis projects *)
+              then
+                ["--prefix"; dep_dir]
+              else []
+            in
             if (stat "configure").st_perm land 0o100 <> 0 then
-              exec ["./configure"]
+              exec (["./configure"] @ add_opts)
             else
-              exec ["sh" ; "./configure"]
+              exec (["sh" ; "./configure"] @ add_opts)
           else
             return ()) >>= fun () ->
         let make = getenv ~default:"make" "MAKE" in

@@ -52,9 +52,10 @@ let exec_exitcode ?(redirects=`Std) args = Res.catch_exn (fun () ->
       let () = Log.info "Running command %S%s" cmd redir_msg in
       (* ^^^ logging about future actions must be done before making them! *)
 
-      let () = Log.debug "Running command's argv: [%s]"
+      let () = Log.debug "Running command's argv: [%s], cwd=%S"
         (String.concat " ; " &
            List.map (Printf.sprintf "%S") args)
+        (Sys.getcwd ())
       in
 
       let pid = create_process
