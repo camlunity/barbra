@@ -159,6 +159,7 @@ let makefile : install_type = object
       WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
       with_the_env & fun () ->
         Unix.(
+          WithRes.bindres with_env ("prefix", dep_dir) & fun _old_env ->
           if Sys.file_exists "configure" then
             if (stat "configure").st_perm land 0o100 <> 0 then
               exec ["./configure"]
