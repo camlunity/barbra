@@ -55,13 +55,22 @@ module W (M : MonadError)
       }
     ;
 
-    value bindres : withres 'a 'r -> 'a -> ('r -> M.m 'z) -> M.m 'z
+    type wrfun 'a 'r 'z = 'a -> ('r -> M.m 'z) -> M.m 'z
+    ;
+
+    value bindres : withres 'a 'r -> wrfun 'a 'r 'z
     ;
 
     value with_alt :
       withres 'a 'r ->
       withres 'b 'r ->
       withres ('a * 'b) (option exn * 'r)
+    ;
+
+    value wr_alt :
+      withres 'a 'r ->
+      withres 'b 'r ->
+      wrfun ('a * 'b) ('r * option exn) 'z
     ;
 
     value with_identity : withres 'r 'r;
@@ -76,7 +85,7 @@ module W (M : MonadError)
     value with_sys_chdir : withres string dir_abstract
     ;
 
-    value sequence : withres 'a 'r -> withres (list 'a) (list 'r)
+    value sequence : withres 'a 'r -> wrfun (list 'a) (list 'r) 'z
     ;
 
   end
@@ -88,6 +97,21 @@ module W (M : MonadError)
       ; fin : 'r -> M.m unit
       }
     ;
+
+    type wrfun 'a 'r 'z = 'a -> ('r -> M.m 'z) -> M.m 'z
+    ;
+
+(*
+    сделать что-то наподобие передачи fin_all : unit -> M.m unit,
+    которую в простом случае (bindres) создавать на основании
+    созданного ресурса: fun () -> wr.fin res, а в случаях sequence --
+    списком из кусков.
+    заодно with_alt из треша с мутабельным превратится во что-то
+    более красивое, но на внутренних структурах типа fin_all.
+*)
+
+    type finitem = unit -> M.m unit;
+    type finlist = list finitem;
 
     value ( %> ) f g = fun x -> g (f x)
     ;
@@ -108,18 +132,28 @@ module W (M : MonadError)
 
     value ( >>= ) = M.bind_rev;
 
+    value rec close_fl
+     : finlist -> M.m unit
+     = fun [ [] -> M.return () | [h :: t] -> h () >>= fun () -> close_fl t ]
+    ;
+
+    value run_fl
+     : finlist -> ('a -> M.m 'z) -> 'a -> M.m 'z
+     = fun fl f a ->
+         M.catch
+           (fun () -> f a >>= fun z -> close_fl fl >>= fun () -> M.return z)
+           (fun e -> close_fl fl >>= fun () -> M.error e)
+    ;
+
+    value f_of_wr
+     : withres 'a 'r -> 'r -> finitem
+     = fun wr r ->
+      fun () -> wr.fin r
+    ;
+
     value bindres wr a f =
       wr.cons a >>= fun r ->
-      M.catch
-        (fun () ->
-           f r >>= fun z ->
-           wr.fin r >>= fun () ->
-           M.return z
-        )
-        (fun e ->
-           wr.fin r >>= fun () ->
-           M.error e
-        )
+      run_fl [f_of_wr wr r] f r
     ;
 
     value with_alt wr1 wr2 =
@@ -138,6 +172,23 @@ module W (M : MonadError)
             )
       ; fin = fun (_opt_err, r) -> fin.val r
       }
+    ;
+
+    value wr_alt
+     : withres 'a 'r -> withres 'b 'r -> wrfun ('a * 'b) ('r * option exn) 'z
+     = fun wr1 wr2 ->
+         fun (a, b) f ->
+           M.catch
+             (fun () ->
+                wr1.cons a >>= fun r1 ->
+                M.return ((r1, None), [f_of_wr wr1 r1])
+             )
+             (fun e ->
+                wr2.cons b >>= fun r2 ->
+                M.return ((r2, Some e), [f_of_wr wr2 r2])
+             )
+           >>= fun (r_and_opterr, fl) ->
+           run_fl fl f r_and_opterr
     ;
 
     type dir_abstract = string
@@ -161,30 +212,32 @@ module W (M : MonadError)
        }
     ;
 
-    value monad_sequence : list (M.m 'a) -> M.m (list 'a)
-     = fun lst ->
-         inner [] lst
-         where rec inner acc lst =
-           match lst with
-           [ [] -> M.return (List.rev acc)
-           | [hm :: tm] ->
-                hm >>= fun h ->
-                inner [h :: acc] tm
-           ]
-    ;
 
     value sequence
-     : withres 'a 'r -> withres (list 'a) (list 'r)
+     : withres 'a 'r -> wrfun (list 'a) (list 'r) 'z
      = fun wr ->
-         (* todo: сделать более честно, тут сходу не вижу гарантий
-            освобождения тех wr.cons lst_item, которые были созданы
-            при wr.cons предыдущих элементов. *)
-         { cons = fun lst ->
-             monad_sequence (List.map wr.cons lst)
-         ; fin = fun lst ->
-             monad_sequence (List.rev_map wr.fin lst) >>= fun _unit_list ->
-             M.return ()
-         }
+         fun lst_a f ->
+           (cons_all lst_a
+            where rec cons_all ?(lst_r_rev=[]) ?(lst_fin_rev=[]) lst_a =
+              match lst_a with
+              [ [] -> M.return (List.rev lst_r_rev, lst_fin_rev)
+              | [h :: t] ->
+                  M.catch
+                    (fun () ->
+                       wr.cons h >>= fun r ->
+                       cons_all
+                         ~lst_r_rev:[r :: lst_r_rev]
+                         ~lst_fin_rev:[f_of_wr wr r :: lst_fin_rev]
+                         t
+                    )
+                    (fun e ->
+                       close_fl lst_fin_rev >>= fun () ->
+                       M.error e
+                    )
+              ]
+           )
+           >>= fun (lst_r, lst_fin_rev) ->
+           run_fl lst_fin_rev f lst_r
     ;
 
 
