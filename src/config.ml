@@ -12,9 +12,12 @@ let parse_line_opt s =
       Scanf.sscanf s " dep %s %s %s " (fun name typ src ->
         (* FIXME(superbobry): doesn't cover the new type schema! *)
         let package = match String.lowercase typ with
-          | "remote-tar-gz" -> Remote (`TarGz, src)
-          | "remote-tar-bz2" -> Remote (`TarBzip2, src)
-          | "remote-tar" -> Remote (`Tar, src)
+          | "remote" when String.ends_with src ".tar.gz"  -> Remote (`TarGz, src)
+          | "remote-tar-gz"                               -> Remote (`TarGz, src)
+          | "remote" when String.ends_with src ".tar.bz2" -> Remote (`TarBzip2, src)
+          | "remote-tar-bz2"                              -> Remote (`TarBzip2, src)
+          | "remote" when String.ends_with src ".tar"     -> Remote (`Tar, src)
+          | "remote-tar"                                  -> Remote (`Tar, src)
           | "local-tar-gz" -> Local (`TarGz, src)
           | "local-tar-bz2" -> Local (`TarBzip2, src)
           | "local-tar" -> Local (`Tar, src)
@@ -25,7 +28,7 @@ let parse_line_opt s =
           | "bundled-tar-bz2" -> Bundled (`TarBzip2, src)
           | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
             VCS (vcs_type_of_string typ, src)
-          | _ -> Log.error "unsupported package type: %S" typ
+          | _ -> Log.error "unsupported package type: %S when source = %S\n" typ src
         in (name, package)
       )
     else
