@@ -12,12 +12,15 @@ let parse_line_opt s =
       Scanf.sscanf s " dep %s %s %s " (fun name typ src ->
         (* FIXME(superbobry): doesn't cover the new type schema! *)
         let package = match String.lowercase typ with
-          | "remote" when String.ends_with src ".tar.gz"  -> Remote (`TarGz, src)
-          | "remote-tar-gz"                               -> Remote (`TarGz, src)
-          | "remote" when String.ends_with src ".tar.bz2" -> Remote (`TarBzip2, src)
-          | "remote-tar-bz2"                              -> Remote (`TarBzip2, src)
-          | "remote" when String.ends_with src ".tar"     -> Remote (`Tar, src)
-          | "remote-tar"                                  -> Remote (`Tar, src)
+          | "remote" ->
+            let ends = String.ends_with src in
+            if ends ".tar.gz" then Remote (`TarGz, src)
+            else if ends ".tar.bz2" then Remote (`TarBzip2, src)
+            else if ends ".tar" then Remote (`Tar, src)
+            else Log.error "can't guess remote archive format: %S\n" typ
+          | "remote-tar-gz"  -> Remote (`TarGz, src)
+          | "remote-tar-bz2" -> Remote (`TarBzip2, src)
+          | "remote-tar"     -> Remote (`Tar, src)
           | "local-tar-gz" -> Local (`TarGz, src)
           | "local-tar-bz2" -> Local (`TarBzip2, src)
           | "local-tar" -> Local (`Tar, src)
