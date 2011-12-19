@@ -2,7 +2,7 @@ open Printf
 
 let usage_txt = "\
 brb <command or option>:\n\
-\  help | --help  this help\n\
+\  help | --help         this help\n\
 \  version | --version   output version\n\
 \  build                 build the project in the current directory,\n\
 \                        assuming that \"_dep\" either doesn't exist or\n\
