@@ -2,6 +2,7 @@ open Types
 open Printf
 open Common
 
+let (>>=) = Res.(>>=)
 
 (** [ensure cmd] Same as [ensure], but exits if a given command
     [cmd] is missing. *)
@@ -39,14 +40,12 @@ class remote url : source_type = object
 
   method fetch ~dest_dir =
     let file_path = dest_dir </> Filename.basename url in
-    let open Res in begin
-      Global.create_dirs ();
-      Log.info "Fetching %s to %s" url dest_dir;
+    Global.create_dirs ();
+    Log.info "Fetching %s to %s" url dest_dir;
 
-      match Lazy.force remote_fn with
-        | `Ok f -> f ~url ~file_path >>= fun () -> return file_path
-        | `Error () -> assert false  (* impossible *)
-    end
+    match Lazy.force remote_fn with
+    | `Ok f -> f ~url ~file_path >>= fun () -> Res.return file_path
+    | `Error () -> assert false  (* impossible *)
 end
 
 
@@ -63,7 +62,6 @@ class archive archive_type file_path : source_type = object
       | `TarBzip2 -> ["tar"; "-jxf"]
     in
 
-    let open Res in begin
       Global.create_dirs ();
       Log.info "Extracting %s to %S" file_path dest_dir;
 
@@ -72,11 +70,10 @@ class archive archive_type file_path : source_type = object
 
       (* If [dest_dir] contains a single directory, assume it *is* the
          source dir, otherwise return [dest_dir]. *)
-      let files = Array.map ((</>) dest_dir) (Sys.readdir dest_dir)
-      in match Array.to_list files with
-        | [d] when Sys.is_directory d -> return d
-        | _ -> return dest_dir
-    end
+      let files = Array.map ((</>) dest_dir) (Sys.readdir dest_dir) in
+      match Array.to_list files with
+      | [d] when Sys.is_directory d -> Res.return d
+      | _ -> Res.return dest_dir
 end
 
 
@@ -113,14 +110,12 @@ class vcs vcs_type url : source_type = object
       | CVS   -> ["cvs"; "co"]
     in
 
-    let open Res in begin
-      Global.create_dirs ();
-      Log.info
-        "Fetching %s repository at %S" (string_of_vcs_type vcs_type) url;
+    Global.create_dirs ();
+    Log.info
+      "Fetching %s repository at %S" (string_of_vcs_type vcs_type) url;
 
-      exec (vcs_cmd @ [url; dest_dir]) >>= fun () ->
-      return dest_dir
-    end
+    exec (vcs_cmd @ [url; dest_dir]) >>= fun () ->
+    Res.return dest_dir
 end
 
 
@@ -129,7 +124,6 @@ class directory path : source_type = object
     Log.error "Not a directory: %S" path
 
   method fetch ~dest_dir =
-    let open Res in begin
       Global.create_dirs ();
 
       (* FIXME(bobry): do we need to check for existance? *)
@@ -138,6 +132,5 @@ class directory path : source_type = object
                       must not exist" dest_dir
       else
         Fs_util.copy_directory_res ~src:path ~dst:dest_dir >>= fun () ->
-        return dest_dir
-    end
+        Res.return dest_dir
 end

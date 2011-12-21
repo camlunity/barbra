@@ -37,7 +37,7 @@ module Stream
     ;
 
     value map_filter
-     : ! 'a 'b . ('a -> option 'b) -> t 'a -> t 'b
+(*      : ! 'a 'b . ('a -> option 'b) -> t 'a -> t 'b *)
      = fun f s -> Stream.from inner
       where rec inner _streamarg =
         match next_opt s with

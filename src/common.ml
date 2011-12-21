@@ -15,20 +15,17 @@ let command_text_of_args args =
   else String.concat " " args
 
 
-let nul_redirects = lazy
-  (let open UnixLabels in
-   let opengen ~mode n = openfile n ~mode ~perm:0o777 in
-   let openout n = opengen n ~mode:[O_WRONLY] in
-   let openin n = opengen n ~mode:[O_RDONLY] in
+let nul_redirects = lazy begin
+   let module U = UnixLabels in
+   let opengen ~mode n = U.openfile n ~mode ~perm:0o777 in
+   let openout n = opengen n ~mode:[U.O_WRONLY] in
+   let openin n = opengen n ~mode:[U.O_RDONLY] in
    let n = Filew.filename_NUL in
    let nul_out = openout n in
    (openin n, nul_out, nul_out, " (redirecting to " ^ n ^ ")")
-  )
+end
 
-let std_redirects = lazy
-  (let open Unix in
-   (stdin, stdout, stderr, "")
-  )
+let std_redirects = lazy (Unix.stdin, Unix.stdout, Unix.stderr, "")
 
 
 (** [exec_exitcode args] Executes a given command in a separate process;
@@ -39,7 +36,8 @@ let std_redirects = lazy
     The returned value is the exit code of the process.
 *)
 let exec_exitcode ?(redirects=`Std) args = Res.catch_exn (fun () ->
-  let open UnixLabels in match args with
+  let module U = UnixLabels in
+  match args with
     | [] -> failwith "can't execute empty command!"
     | (prog :: _) as args ->
       let cmd = command_text_of_args args in
@@ -58,18 +56,18 @@ let exec_exitcode ?(redirects=`Std) args = Res.catch_exn (fun () ->
         (Sys.getcwd ())
       in
 
-      let pid = create_process
+      let pid = U.create_process
         ~prog
         ~args:(Array.of_list args)
         ~stdin ~stdout ~stderr in
       begin
-        match waitpid ~mode:[] pid with
+        match U.waitpid ~mode:[] pid with
           | (pid', _) when pid' <> pid -> assert false
-          | (_, WEXITED code) ->
+          | (_, U.WEXITED code) ->
             Res.return code
-          | (_, WSIGNALED signal) ->
+          | (_, U.WSIGNALED signal) ->
             Log.error "Command %S was killed by signal %i" cmd signal
-          | (_, WSTOPPED _) ->
+          | (_, U.WSTOPPED _) ->
             assert false  (* we are not waiting for stopped processes *)
       end
 )
@@ -81,9 +79,9 @@ let exec_exitcode ?(redirects=`Std) args = Res.catch_exn (fun () ->
     let _ : (unit, exn) Res.res = exec ["sh"; "-c"; "./configure"];;
 *)
 let exec args =
-  let open Res in
+  let (>>=) = Res.(>>=) in
   exec_exitcode args >>= fun code ->
-  catch_exn
+  Res.catch_exn
     (fun () ->
        let cmd = command_text_of_args args in
        match code with

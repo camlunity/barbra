@@ -47,7 +47,7 @@ let parse_line_opt s =
     else
       None
 
-let stream_filter : 'a . ('a -> bool) -> 'a Stream.t -> 'a Stream.t
+let stream_filter (* : 'a . ('a -> bool) -> 'a Stream.t -> 'a Stream.t *)
  = fun pred s ->
      (* todo: implement directly *)
      Stream.map_filter (fun x -> if pred x then Some x else None) s

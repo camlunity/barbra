@@ -133,6 +133,7 @@ value repeat : int -> ( 'a -> res 'a 'e ) -> 'a -> res 'a ('e * int)
 ;
 
 
+(*
 module Sys
  :
   sig
@@ -144,3 +145,4 @@ module Sys
     ;
   end
 ;
+*)

@@ -1,9 +1,11 @@
 open Common
 open Types
-open Global
+open Printf
+open WithM
 
 module G = Global
 
+let (>>=) = Res.(>>=)
 
 let getenv ?(default="") env_name =
   try Unix.getenv env_name with Not_found -> default
@@ -99,7 +101,6 @@ let the_env =
 
 
 let do_write_env fn =
-  let open Printf in
   Filew.with_file_out_bin fn & fun outch ->
   List.iter
     (let set n v = fprintf outch "export %s=\"%s\"\n" n v in
@@ -112,26 +113,24 @@ let do_write_env fn =
     )
     the_env
 
-let lazy_write_env = lazy (do_write_env Global.env_sh)
+let lazy_write_env = lazy (do_write_env G.env_sh)
 
 let write_env () = Lazy.force lazy_write_env
 
 
 let withres_env =
-  let open WithM.WithRes in
-  let open Res in
-  sequence
-    { cons = begin function
+  WithRes.sequence
+    { WithRes.cons = begin function
         | (`Prepend, n, v) ->
-            with_env_prepended.cons (n, v) >>= fun r ->
-            return (`Prepend, r)
+            with_env_prepended.WithRes.cons (n, v) >>= fun r ->
+            Res.return (`Prepend, r)
         | (`Set, n, v) ->
-            with_env.cons (n, v) >>= fun r ->
-            return (`Set, r)
+            with_env.WithRes.cons (n, v) >>= fun r ->
+            Res.return (`Set, r)
       end
     ; fin = begin function
-        | (`Prepend, old_env) -> with_env_prepended.fin old_env
-        | (`Set, old_env) -> with_env.fin old_env
+        | (`Prepend, old_env) -> with_env_prepended.WithRes.fin old_env
+        | (`Set, old_env) -> with_env.WithRes.fin old_env
       end
     }
 
@@ -142,38 +141,42 @@ let with_the_env f =
 
 
 let run_with_env cmd =
+(*
   let open WithM in
   let open Res in
+*)
   with_the_env & fun () ->
   exec cmd
 
 
 let makefile : install_type = object
   method install ~source_dir =
+(*
     let open WithM in
-    let open Res in begin
-      Global.create_dirs ();
+    let open Res in
+*)
+    begin
+      G.create_dirs ();
       write_env ();
       Log.info "Starting Makefile build";
 
       WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
       with_the_env & fun () ->
-        Unix.(
-          if Sys.file_exists "configure" then
+          (if Sys.file_exists "configure" then
             let add_opts =
               if Sys.file_exists "_oasis"
                    (* maybe we should always pass --prefix,
                       not only for oasis projects *)
               then
-                ["--prefix"; dep_dir]
+                ["--prefix"; G.dep_dir]
               else []
             in
-            if (stat "configure").st_perm land 0o100 <> 0 then
+            if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0 then
               exec (["./configure"] @ add_opts)
             else
               exec (["sh" ; "./configure"] @ add_opts)
           else
-            return ()) >>= fun () ->
+            Res.return ()) >>= fun () ->
         let make = getenv ~default:"make" "MAKE" in
         exec [make; "all"] >>= fun () ->
         exec [make; "install"]
