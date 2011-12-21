@@ -34,5 +34,5 @@ Executable test
   MainIs: test.ml
 
 Test main
-  Command: OCAMLRUNPARAM=b $test
+  Command: env OCAMLRUNPARAM=b $test
   TestTools: test
