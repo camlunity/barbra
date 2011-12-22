@@ -247,7 +247,7 @@ file (lines are wrapped manually):
     dep postgresql hg http://hg.ocaml.info/release/postgresql-ocaml
     dep amall hg ssh://some-dev-server//repo/amall
 
-  So, it is usable and useful for some of depelopers.
+  So, it is usable and useful for some of developers.
 
 
 Practical hints
