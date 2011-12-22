@@ -213,3 +213,72 @@ $ brb <command or option>:
                         "_dep" either doesn't exist or contains built
                         dependencies
   rebuild-deps          rebuild project's dependencies
+
+
+
+Practical experience
+
+  It's known that brb has built the project with the following configuration
+file (lines are wrapped manually):
+
+    $ cat brb.conf
+    version 1
+
+    dep ounit remote-tar-gz
+      http://forge.ocamlcore.org/frs/download.php/495/ounit-1.1.0.tar.gz
+
+    dep pcre-ocaml remote-tar-bz2
+      http://hg.ocaml.info/release/pcre-ocaml/archive/release-6.2.3.tar.bz2
+    dep ocamlnet local-dir ../ocamlnet/work
+    dep json-wheel local-dir ../json-wheel-1.0.6
+    dep json-static remote-tar-bz2
+      http://martin.jambon.free.fr/json-static-0.9.8.tar.bz2
+
+    dep lwt local-dir ../lwt-2.3.2
+
+    dep ocaml-substrings hg ssh://some-dev-server//repo/ocaml-substrings
+    dep ocaml_monad_io hg ssh://some-dev-server//repo/ocaml_monad_io
+    dep ocaml-iteratees hg ssh://some-dev-server//repo/ocaml-iteratees
+    dep dumbstreaming hg ssh://some-dev-server//repo/dumbstreaming
+
+    dep cadastr hg ssh://some-dev-server//repo/cadastr
+    dep parvel hg ssh://some-dev-server//repo/parvel#1bc1c224051c
+
+    dep postgresql hg http://hg.ocaml.info/release/postgresql-ocaml
+    dep amall hg ssh://some-dev-server//repo/amall
+
+  So, it is usable and useful for some of depelopers.
+
+
+Practical hints
+
+  The version 1.0 is very limited, the real world is much more complex.
+We are trying to integrate features in barbra, but it's impossible before
+deep thinking.
+
+  But sometimes one needs to build project, that can be built much
+harder than "configure + make all + make install".  For example, some
+projects build only bytecode libraries on "make all" (and we need to
+"make opt" to compile native code libraries), some projects require
+some specific ./configure options.
+
+  The current workarounds are ugly, but they work in simple cases
+(not in general, not for "making patches for upstream").
+
+1. If you need to modify configure or makefile invocation, first
+copy/clone the sources to some private directory (for example,
+take a look at "dep json-wheel local-dir ../json-wheel-1.0.6" above),
+then modify the sources to make it work.
+   In the text below we assume you have copied sources to local
+private directory.
+
+2. If you need to pass additional options to ./configure,
+rename configure script, then write your own ./configure like this:
+
+    #!/bin/sh
+    . ./configure-orig --disable-libev $*
+
+3. If you need to build makefile's targets other than "all",
+rename "all" target to "all_old" and write new target "all":
+
+    all : all_old opt
