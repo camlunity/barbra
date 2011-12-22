@@ -67,7 +67,7 @@ Why not <alternative>?
    2. works on linux, but has problems on windows generally.
    3. requires writing godi-specific files in every project.
    4. haven't gained popularity, too few people are writing godi-files
-      now, now the oasis is the trend.
+      now, oasis is the trend.
    (of course, we will have similar problems with project's specific
    files, but: 1. in simple cases one will not be required to write any
    files if all dependencies are available with currently-available
@@ -159,7 +159,7 @@ the configuration file is very simple.
 
   Every dependency occupies exactly one line of config, the format is:
 
-"dep  package_name  retrieving_method  url"
+"dep  <package_name>  <retrieving_method>  <url>"
 
   It's assumed that every field but last does not contain whitespaces,
 and whitespaces delimit the fields.
