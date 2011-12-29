@@ -100,6 +100,12 @@ url of VCS, path to local files, path to bundled dependencies).
 dependencies and directives like "always install fresh-downloaded packages
 to local environment", "trust default ocamlfind's packages" or
 "install packages to default ocamlfind's destination")
+5. "bundle" -- archive that contains the project's sources with sources
+of its dependencies (according to brb.conf), unpacked, ready for easy
+compilation and installation (with some shell script, for example),
+without any additional requirements (except ocaml+findlib which are
+required anyway).  Dependencies are stored unpacked in archive's
+directories, so tar/gunzip/bunzip2 are not needed to use the bundle.
 
 
 Documentation on version 1.0
