@@ -53,10 +53,11 @@ Why not <alternative>?
    2. don't know what to do with private projects -- should we setup
       our own oasis-db server?
    3. too heavy for simple tasks.
-   4. it's "beta" two years and it's not ready to use now.
+   4. it's "beta" two years and it's not ready to use now (however
+      the author of oasis-db uses it).
    5. the need to mark projects as stable/... -- does anybody use it?
       it seems to be an additional bureaucracy.
-   6. can't install software from VCS by design.
+   6. can't install software from VCS for now (2011-12-29).
 2. overbld
    1. it's not flexible at all, it make "monolithic collection of ocaml
       and libraries", because it's author was too lazy to make more
