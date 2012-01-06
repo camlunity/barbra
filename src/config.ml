@@ -2,8 +2,7 @@
 open Common
 open Types
 
-let read_all_lines ch =
-  Filew.channel_lines ch
+module List = ListLabels
 
 
 let parse_line_opt l =
@@ -50,44 +49,47 @@ let parse_line_opt l =
       in (name, package)
     )
 
-let stream_filter (* : 'a . ('a -> bool) -> 'a Stream.t -> 'a Stream.t *)
- = fun pred s ->
-     (* todo: implement directly *)
-     Stream.map_filter (fun x -> if pred x then Some x else None) s
-
-let line_means_something line =
-  let len = String.length line in
-  let rec inner i =
-    if i = len
-    then false
-    else
-      begin match line.[i] with
-          '#' -> false
-        | '\x20' | '\x09' | '\x0A' | '\x0D' -> inner (i + 1)
-        | _ -> true
+let filter_comments =
+  let line_means_something line =
+    let rec inner = function
+      | 0 -> false
+      | i -> begin match line.[i] with
+          | '#' -> false
+          (* FIXME(superbobry): why those characters? *)
+          | '\x20' | '\x09' | '\x0A' | '\x0D' -> inner (i + 1)
+          | _ -> true
       end
+    in inner (String.length line - 1)
   in
-    inner 0
 
-let filter_comments s =
-  stream_filter line_means_something s
+  Stream.map_filter (fun line ->
+    if line_means_something line then Some line else None)
 
-let check_dupes_v1 : db -> unit = fun db ->
+let remove_CR =
+  Stream.map (fun line ->
+    let len = String.length line in
+    if len > 0 && line.[len - 1] = '\x0D' then
+      String.sub line 0 (len - 1)
+    else
+      line
+  )
+
+let check_dupes_v1 db =
   let sorted = List.sort
-    (fun (n1, _p1) (n2, _p2) -> String.compare n1 n2) db in
-  begin match sorted with
+    ~cmp:(fun (n1, _p1) (n2, _p2) -> String.compare n1 n2) db
+  in
+
+  match sorted with
     | [] -> ()
     | (hn, _hp) :: t ->
-        let rec loop hn t =
-          begin match t with
-            | [] -> ()
-            | (hn', _hp') :: t' ->
-                if hn = hn'
-                then Log.error "brb.conf: duplicate dependency %S" hn
-                else loop hn' t'
-          end
-        in loop hn t
-  end
+      ignore & List.fold_left
+        ~init:hn
+        ~f:(fun hn (hn', _hp') ->
+          if hn = hn' then
+            Log.error "brb.conf: duplicate dependency %S" hn
+          else
+            hn'
+        ) t
 
 let parse_config_v1 s =
   s
@@ -99,27 +101,13 @@ let parse_config_v1 s =
        r
      end
 
-let remove_CR s =
-  Stream.map
-    (fun line ->
-       let len = String.length line in
-       if len > 0 && line.[len - 1] = '\x0D'
-       then String.sub line 0 (len - 1)
-       else line
-    )
-    s
-
-let get_config_version s =
-  begin match Stream.next_opt s with
-      None -> Log.error "brb.conf empty!"
-    | Some line ->
-        try
-          (* let () = dbg "get_config_version: line = %S" line in *)
-          Scanf.sscanf (String.lowercase line) " version %s "
-            (fun v -> v)
-        with Scanf.Scan_failure _ ->
-          Log.error "brb.conf: missing version!"
-  end
+let get_config_version s = match Stream.next_opt s with
+  | None -> Log.error "brb.conf empty!"
+  | Some line ->
+    try
+      Scanf.sscanf (String.lowercase line) " version %s " identity
+    with Scanf.Scan_failure _ ->
+      Log.error "brb.conf: missing version!"
 
 let parse_stream s =
   s
@@ -131,11 +119,11 @@ let parse_stream s =
          | v  -> Log.error "brb.conf: unknown version %S" v
        end
 
+let parse_string st =
+  let lines = String.nsplit st "\n" in
+  parse_stream (Stream.of_list lines)
+
 let parse_config filename =
   filename
   |> Filew.stream_of_file_lines
   |> parse_stream
-
-let parse_string st =
-  let lines = String.nsplit st "\n" in
-  parse_stream (Stream.of_list lines)
