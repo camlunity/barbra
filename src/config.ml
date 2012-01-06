@@ -6,12 +6,15 @@ module List = ListLabels
 
 module Keywords = struct
   let guess_archive s ~succ ~fail =
-    let (_, ext) = String.split s "." in
-    match ext with
-      | "tar.gz"  -> succ `TarGz
-      | "tar.bz2" -> succ `TarBzip2
-      | "tar"     -> succ `Tar
-      | _         -> fail ()
+    let ext = Filename.check_suffix s in
+    if ext ".tar.gz" then
+      succ `TarGz
+    else if ext ".tar.bz2" then
+      succ `TarBzip2
+    else if ext ".tar" then
+      succ `Tar
+    else
+      fail ()
 
   let dep args = Scanf.sscanf args " %s %s %s " (fun name typ src ->
     let package = match String.lowercase typ with
