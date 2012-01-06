@@ -6,46 +6,49 @@ let read_all_lines ch =
   Filew.channel_lines ch
 
 
-let parse_line_opt s =
-  let guess_archive s ans fail =
-    let ends = String.ends_with s in
-    if ends ".tar.gz" then ans `TarGz
-    else if ends ".tar.bz2" then ans `TarBzip2
-    else if ends ".tar" then ans `Tar
-    else fail ()
+let parse_line_opt l =
+  let guess_archive s ~succ ~fail =
+    let (_, ext) = String.split s "." in
+    match ext with
+      | "tar.gz"  -> succ `TarGz
+      | "tar.bz2" -> succ `TarBzip2
+      | "tar"     -> succ `Tar
+      | _         -> fail ()
   in
-    if String.length s > 0 then
-      some &
-      Scanf.sscanf s " dep %s %s %s " (fun name typ src ->
-        (* FIXME(superbobry): doesn't cover the new type schema! *)
-        let package = match String.lowercase typ with
-          | "remote" ->
-            guess_archive src (fun x -> Remote (x,src))
-              (fun () -> Log.error "can't guess remote archive format: %S\n" typ)
-          | "remote-tar-gz"  -> Remote (`TarGz, src)
-          | "remote-tar-bz2" -> Remote (`TarBzip2, src)
-          | "remote-tar"     -> Remote (`Tar, src)
-          | "local" ->
-            guess_archive src (fun x -> Local (x,src))
-              (fun () -> Log.error "can't guess local archive format: %S\n" typ)
-          | "local-tar-gz" -> Local (`TarGz, src)
-          | "local-tar-bz2" -> Local (`TarBzip2, src)
-          | "local-tar" -> Local (`Tar, src)
-          | "local-dir" -> Local (`Directory, src)
-          | "bundled-dir" -> Bundled (`Directory, src)
-          | "bundled" ->
-            guess_archive src (fun x -> Bundled (x,src))
-              (fun () -> Log.error "can't guess bundle's archive format: %S\n" typ)
-          | "bundled-tar" -> Bundled (`Tar, src)
-          | "bundled-tar-gz" -> Bundled (`TarGz, src)
-          | "bundled-tar-bz2" -> Bundled (`TarBzip2, src)
-          | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
-            VCS (vcs_type_of_string typ, src)
-          | _ -> Log.error "unsupported package type: %S when source = %S\n" typ src
-        in (name, package)
-      )
-    else
-      None
+
+  if l = "" then
+    None
+  else
+    some & Scanf.sscanf l " dep %s %s %s " (fun name typ src ->
+      let package = match String.lowercase typ with
+        | "remote" ->
+          guess_archive src
+            ~succ:(fun x -> Remote (x,src))
+            ~fail:(fun () -> Log.error "can't guess remote archive format: %S\n" typ)
+        | "remote-tar-gz"  -> Remote (`TarGz, src)
+        | "remote-tar-bz2" -> Remote (`TarBzip2, src)
+        | "remote-tar"     -> Remote (`Tar, src)
+        | "local" ->
+          guess_archive src
+            ~succ:(fun x -> Local (x, src))
+            ~fail:(fun () -> Log.error "can't guess local archive format: %S\n" typ)
+        | "local-tar-gz" -> Local (`TarGz, src)
+        | "local-tar-bz2" -> Local (`TarBzip2, src)
+        | "local-tar" -> Local (`Tar, src)
+        | "local-dir" -> Local (`Directory, src)
+        | "bundled-dir" -> Bundled (`Directory, src)
+        | "bundled" ->
+          guess_archive src
+            ~succ:(fun x -> Bundled (x,src))
+            ~fail:(fun () -> Log.error "can't guess bundle's archive format: %S\n" typ)
+        | "bundled-tar" -> Bundled (`Tar, src)
+        | "bundled-tar-gz" -> Bundled (`TarGz, src)
+        | "bundled-tar-bz2" -> Bundled (`TarBzip2, src)
+        | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
+          VCS (vcs_type_of_string typ, src)
+        | _ -> Log.error "unsupported package type: %S when source = %S\n" typ src
+      in (name, package)
+    )
 
 let stream_filter (* : 'a . ('a -> bool) -> 'a Stream.t -> 'a Stream.t *)
  = fun pred s ->
