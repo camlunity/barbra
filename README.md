@@ -1,133 +1,121 @@
 Damn Simple Package Manager for OCaml
 =====================================
 
-Specification (work in progress) :
+`barbra` is beta software! incomplete specification *in russian* can be
+found [here](https://docs.google.com/document/d/1dxbuu3RP3NCxMI54YFRtnwFUOTrIj-EWmBdwy32a0CI/edit)
 
-  https://docs.google.com/document/d/1dxbuu3RP3NCxMI54YFRtnwFUOTrIj-EWmBdwy32a0CI/edit
+Basics
+------
 
-How to use :
-
-  FIXME
-
-
-(* OASIS_START *)
-(* DO NOT EDIT (digest: 0334a6ea39277bb2ed53e632eff63736) *)
-This is the README file for the barbra distribution.
-
-Damn Simple Package Manager
-
-See the files INSTALL.txt for building and installation instructions. 
+This project is named `barbra`, executable file is `brb`, project's
+configuration file is `brb.conf`.
 
 
-(* OASIS_STOP *)
+Goals
+-----
 
+* Keep all project dependencies in a separate config file -- `brb.conf`
+  (similar to [rebar.config](http://github.com/basho/rebar), popular
+  in Erlang community)
+* Fetch dependencies easily from anywhere: archive, vcs, local folder, etc.
+* Fetch, build and install dependencies with a single command.
 
-Documentation
+Why not ...?
+------------
 
+### oasis-db
+1. by its design it requires uploading the tarball to central server,
+   it's not very flexible.  The alternative is to use known locations
+   of packages' sources.
+2. don't know what to do with private projects -- should we setup
+   our own oasis-db server?
+3. too heavy for simple tasks.
+4. it's *beta* two years and it's not ready to use now (however
+   the author of oasis-db uses it).
+5. the need to mark projects as stable/... -- does anybody use it?
+   it seems to be an additional bureaucracy.
 
-Name
+### overbld
+1. it's not flexible at all, it make "monolithic collection of ocaml
+   and libraries", because it's author was too lazy to make more
+   flexible software -- overbld is written in bash, and it's hard
+   to do something good in bash.
 
-  This project is named "barbra", executable file is "brb", project's
-configuration file is "brb.conf".
+### godi
+1. doesn't work on ocaml/msvc.
+2. works on linux, but has problems on windows generally.
+3. requires writing godi-specific files in every project.
+4. haven't gained popularity, too few people are writing godi-files
+   now, oasis is the trend.
 
-Global targets
+**Note**: of course, we will have similar problems with project's
+specific files, but:
 
-  brb will download/get the dependencies and install them.  brb's work
-is guided by local project's config (similar to rebar's "rebar.config")
-and by brb's invocation options.  It is supposed to automatize the usually
-manual steps:
-1. downloading source code : curl || git || svn
-2. unpacking : tar -xz || tar -xj || 7z x
-3. recursive search of dependencies
-4. building : ./configure && make || ocaml setup.ml -build ||
-   ./configure && omake
-5. installation : make install || omake install || ocaml setup.ml -install
-
-
-Why not <alternative>?
-
-1. oasis-db
-   1. by its design it requires uploading the tarball to central server,
-      it's not very flexible.  The alternative is to use known locations
-      of packages' sources.
-   2. don't know what to do with private projects -- should we setup
-      our own oasis-db server?
-   3. too heavy for simple tasks.
-   4. it's "beta" two years and it's not ready to use now (however
-      the author of oasis-db uses it).
-   5. the need to mark projects as stable/... -- does anybody use it?
-      it seems to be an additional bureaucracy.
-   6. can't install software from VCS for now (2011-12-29).
-2. overbld
-   1. it's not flexible at all, it make "monolithic collection of ocaml
-      and libraries", because it's author was too lazy to make more
-      flexible software -- overbld is written in bash, and it's hard
-      to do something good in bash.
-3. godi
-   1. doesn't work on ocaml/msvc.
-   2. works on linux, but has problems on windows generally.
-   3. requires writing godi-specific files in every project.
-   4. haven't gained popularity, too few people are writing godi-files
-      now, oasis is the trend.
-   (of course, we will have similar problems with project's specific
-   files, but: 1. in simple cases one will not be required to write any
-   files if all dependencies are available with currently-available
-   ocamlfind, 2. one should not write config-file for every project,
-   it will be enough to write one config for the main project you are
-   building.)
-
+* in simple cases one will not be required to write any
+files if all dependencies are available with currently-available
+ocamlfind;
+* one should not write config-file for every project,
+it will be enough to write one config for the main project you are
+building.
 
 
 Definitions
+-----------
 
-  Documentation uses some terms with more precise meaning than
+Documentation uses some terms with more precise meaning than
 usually, so we'll state these terms' definitions.
 
-1. "package manager" -- progam described in this documentation, which
-aims to solve problems described in chapter "Global targets".  (however,
-for now it's the "dependencies' downloader and installer", not a fair
-package manager.)
-2. "project" -- set of programs, libraries and utilities, stored in
-some specific directory.  Project uses "package manager" for compilation
-and installation.
-3. "package" -- set of libraries and utilities that use some standard
-ways to compile and install, for example, that builds with
-"./configure && make && make install" and installs with ocamlfind.
-4. "project configuration" -- file "brb.conf" where user describes what
-dependencies the project requires, where to get them (url of tarball,
-url of VCS, path to local files, path to bundled dependencies).
-(in some future the "project configuration" may contain inter-package
-dependencies and directives like "always install fresh-downloaded packages
-to local environment", "trust default ocamlfind's packages" or
-"install packages to default ocamlfind's destination")
-5. "bundle" -- archive that contains the project's sources with sources
-of its dependencies (according to brb.conf), unpacked, ready for easy
-compilation and installation (with some shell script, for example),
-without any additional requirements (except ocaml+findlib which are
-required anyway).  Dependencies are stored unpacked in archive's
-directories, so tar/gunzip/bunzip2 are not needed to use the bundle.
+1. **package manager** -- a progam described in this documentation,
+   whichaims to solve problems described in **Goal** (however,
+   for now it's the "dependencies' downloader and installer", not
+   a fair package manager).
+2. **project** -- set of programs, libraries and utilities, stored in
+   some specific directory.  Project uses *package manager* for compilation
+   and installation.
+3. **package** -- set of libraries and utilities that use some standard
+   ways to compile and install, for example, that builds with
+   `./configure && make && make install` and installs with `ocamlfind`.
+4. **project configuration** -- file `brb.conf`, which lists all project
+   dependencies, namely: where to get them (url of tarball, url of VCS,
+   path to local files, path to bundled dependencies).
+
+   *Note*: in some future the "project configuration" may contain
+   inter-package dependencies and directives like "always install
+   fresh-downloaded packages to local environment", "trust default
+   ocamlfind's packages" or "install packages to default ocamlfind's
+   destination"
+5. **bundle** -- archive that contains the project's sources with
+   sources of its dependencies (according to brb.conf), unpacked, ready
+   for easy compilation and installation (with some shell script, for
+   example), without any additional requirements (except ocaml + findlib
+   which are required anyway).  Dependencies are stored unpacked in
+   archive's directories, so tar/gunzip/bunzip2 are not needed to use
+   the bundle.
 
 
 Documentation on version 1.0
+----------------------------
 
 
-Targets of version 1.0
+### Targets of version 1.0
 
 
-  brb version 1.0 can only download and install dependencies that are
+`brb` version 1.0 can only download and install dependencies that are
 written down in project configuration file, sequentially, in the order
 of appearance in project config.  All other dependencies will be resolved
 via ocamlfind.
-  It means that environment variables (OCAMLPATH and some others) will
+
+It means that environment variables (`OCAMLPATH` and some others) will
 contain prepended/overwritten paths for the purposes of packages' compilation
 and installation.
 
 
-File system layout
+### File system layout
 
-  Any project that uses brb will have these files and directories
+Any project that uses brb will have these files and directories
 (some of them are temporary).
 
+```
 /brb.conf               --  project configuration
 /_dep/                  --  directory for downloading, compiling and
                             installing packages
@@ -141,20 +129,21 @@ File system layout
 /_dep/env.sh            --  shell script that sets/prepends local pathes
                             to environment variable, when run as
                             ". _dep/env.sh" or "source _dep/env.sh"
+```
 
-
-  Environment variable OCAMLPATH (and some others) will be modified
+Environment variable `OCAMLPATH` (and some others) will be modified
 to allow the project to build (packages and the project itself).
 
-  The contents of "_dep" directory will be removed before the build
+The contents of `_dep` directory will be removed before the build
 and after the successful build.  Otherwise the directory contents will
 be kept as is, to allow to diagnose the build problems.
 
 
-Project's configuration
+### Project's configuratio
 
+**TODO: unformated!***
 
-  Project's configuration of brb 1.x states which packages brb needs
+Project's configuration of `brb` 1.x states which packages brb needs
 to install and where it will get them.  Version 1 is very dumb, so
 the configuration file is very simple.
   Any config's line can be the comment (matching regexp /^\s*#/).
@@ -289,3 +278,14 @@ rename configure script, then write your own ./configure like this:
 rename "all" target to "all_old" and write new target "all":
 
     all : all_old opt
+
+(* OASIS_START *)
+(* DO NOT EDIT (digest: 0334a6ea39277bb2ed53e632eff63736) *)
+This is the README file for the barbra distribution.
+
+Damn Simple Package Manager
+
+See the files INSTALL.txt for building and installation instructions.
+
+
+(* OASIS_STOP *)
