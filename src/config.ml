@@ -66,14 +66,6 @@ let filter_comments =
   Stream.map_filter (fun line ->
     if line_means_something line then Some line else None)
 
-let remove_CR =
-  Stream.map (fun line ->
-    let len = String.length line in
-    if len > 0 && line.[len - 1] = '\x0D' then
-      String.sub line 0 (len - 1)
-    else
-      line
-  )
 
 let check_dupes_v1 db =
   let sorted = List.sort
@@ -112,7 +104,7 @@ let get_config_version s = match Stream.next_opt s with
 
 let parse_stream s =
   s
-  |> remove_CR
+  |> Stream.map (String.strip ~chars:"\r\n")
   |> filter_comments
   |> fun s ->
        begin match get_config_version s with
