@@ -5,8 +5,6 @@ module Stream = Am_Stream.Stream
 
 let failwith fmt = Printf.ksprintf failwith fmt
 
-let identity x = x
-
 let (</>) = Filename.concat
 
 let command_text_of_args args =

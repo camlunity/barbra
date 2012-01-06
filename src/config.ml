@@ -53,20 +53,6 @@ let parse_line_opt = function
       | "dep" -> Keywords.dep args
       | _     -> Log.error "Invalid keyword: %S" keyword
 
-let filter_comments =
-  let line_means_something =
-    String.fold_left (fun acc ch -> match ch with
-      (* FIXME(superbobry): why those characters? *)
-      | '\x20' | '\x09' | '\x0A' | '\x0D' -> acc
-      | '#' -> acc && false
-      | _   -> acc && true
-    ) true
-  in
-
-  Stream.map_filter (fun line ->
-    if line_means_something line then Some line else None)
-
-
 let check_dupes_v1 db =
   let sorted = List.sort
     ~cmp:(fun (n1, _p1) (n2, _p2) -> String.compare n1 n2) db
@@ -105,12 +91,15 @@ let get_config_version s = match Stream.next_opt s with
 let parse_stream s =
   s
   |> Stream.map (String.strip ~chars:"\r\n")
-  |> filter_comments
+  |> Stream.map_filter (fun line ->
+    (* Note(superbobry): filter out *all* lines with comments, i. e.
+       lines containing '#' character. This is probably too silly. *)
+    if String.contains line '#' then None else Some line)
   |> fun s ->
-       begin match get_config_version s with
-         | "1" -> parse_config_v1 s
-         | v  -> Log.error "brb.conf: unknown version %S" v
-       end
+    begin match get_config_version s with
+      | "1" -> parse_config_v1 s
+      | v   -> Log.error "brb.conf: unknown version %S" v
+    end
 
 let parse_string st =
   let lines = String.nsplit st "\n" in
