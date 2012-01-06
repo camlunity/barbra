@@ -78,7 +78,6 @@ usually, so we'll state these terms' definitions.
 4. **project configuration** -- file `brb.conf`, which lists all project
    dependencies, namely: where to get them (url of tarball, url of VCS,
    path to local files, path to bundled dependencies).
-
    *Note*: in some future the "project configuration" may contain
    inter-package dependencies and directives like "always install
    fresh-downloaded packages to local environment", "trust default
@@ -97,7 +96,7 @@ Documentation on version 1.0
 ----------------------------
 
 
-### Targets of version 1.0
+### Targets
 
 
 `brb` version 1.0 can only download and install dependencies that are
@@ -139,58 +138,55 @@ and after the successful build.  Otherwise the directory contents will
 be kept as is, to allow to diagnose the build problems.
 
 
-### Project's configuratio
+### Project's configuration
 
-**TODO: unformated!***
+Version 1 configuration file simply lists required packages' names
+along with source location. Config syntax is pretty straightforward:
 
-Project's configuration of `brb` 1.x states which packages brb needs
-to install and where it will get them.  Version 1 is very dumb, so
-the configuration file is very simple.
-  Any config's line can be the comment (matching regexp /^\s*#/).
-  The first uncommented line must be
+* Any config's line can be the comment (matching regexp /^\s*#/).
+* The first uncommented line must be:
 
-"version 1"
+    version 1
 
-  , it allows developers to modify the format of configuration file later.
+  This allows developers to modify the format of configuration file later.
+* **One** dependency per line! the format is:
 
-  Every dependency occupies exactly one line of config, the format is:
-
-"dep  <package_name>  <retrieving_method>  <url>"
+    dep  <package_name>  <retrieving_method>  <url>
 
   It's assumed that every field but last does not contain whitespaces,
-and whitespaces delimit the fields.
-  The last field, "url", can contain spaces inside it, but not before/after it.
-(for example, it may be useful for specification of paths with spaces).
+  and whitespace delimit the fields. The last field, *url*, may contain
+  whitespace inside it, but not before or after it. See below for
+  available *retrieving_method*s.
+* Dependencies are processed sequentially one-by-one.
+* Duplicating packages are not allowed.
 
-  "retrieving_method" determines how brb will get dependency:
-1. remote-tar{,-{gz,bz2}}  --  package will be downloaded with curl/wget
-   and unpacked with tar -x{,{z,j}}
-2. local-tar{,-{gz,bz2}} -- package will be unpacked from local file system,
-   the "url" is the path to .tar{,.{gz,bz2}} file
-3. local-dir -- package will be copied from local file system, from the
-   directory specified in "url", that should contain the project's source
-   tree.
-4. bundled-{dir,tar{,-{gz,bz2}}} -- package's sources are placed locally,
-   withing the project itself, it will be useful for making "bundles".
-5. {bzr,cvs,darcs,git,hg,svn} -- package will be cloned / checked out from
-   the repository by its "url" (it can be local repository too, without
-   restrictions).  The corresponding VCS utility will be used to get sources:
-   1. hg clone url destdir
-   2. git clone --depth=1 url destdir
-   3. svn co url destdir
-   4. cvs checkout
-   5. darcs get --lazy url destdir
-   6. ... etc
+#### Retrieving methods
 
+```
+| Method          | Description                                                |
+|-----------------+------------------------------------------------------------|
+| remote-tar      | Package will be fetched with curl or wget and then         |
+| remote-tar-gz   | unpacked with an appropriate archiver.                     |
+| remote-tar-bz2  |                                                            |
+|-----------------+------------------------------------------------------------|
+| local-tar       | Package will be unpacked from local file system (*url*     |
+| local-tar-gz    | is absolute path to the archive).                          |
+| local-tar-bz2   |                                                            |
+|-----------------+------------------------------------------------------------|
+| local-dir       | Package will be copied from local file system, from the    |
+|                 | directory, specified in *url*.                             |
+|-----------------+------------------------------------------------------------|
+| bundled-dir     | Package's sources are placed locally, within the project   |
+| bundled-tar*    | itself, this might be usefull for making *bundles*.        |
+|-----------------+------------------------------------------------------------|
+| bzr, cvs, darcs | Packaged will be cloned or checked out from the repository |
+| git, hg, svn    | by its *url*; which might as well point to he local        |
+|                 | repository.                                                |
+```
 
-  Dependencies are processed sequentially.  It's how we state the
-interpackage dependencies for now, in version 1.
+### brb command line
 
-  Duplicating packages are not allowed.
-
-
-brb command line
-
+```
 $ brb <command or option>:
   help | --help         output this help
   version | --version   output version
@@ -209,75 +205,75 @@ $ brb <command or option>:
                         "_dep" either doesn't exist or contains built
                         dependencies
   rebuild-deps          rebuild project's dependencies
+```
 
 
+### Example
+-----
 
-Practical experience
+```
+$ cat brb.conf
+version 1
 
-  It's known that brb has built the project with the following configuration
-file (lines are wrapped manually):
+dep ounit remote-tar-gz
+  http://forge.ocamlcore.org/frs/download.php/495/ounit-1.1.0.tar.gz
 
-    $ cat brb.conf
-    version 1
+dep pcre-ocaml remote-tar-bz2
+  http://hg.ocaml.info/release/pcre-ocaml/archive/release-6.2.3.tar.bz2
+dep ocamlnet local-dir ../ocamlnet/work
+dep json-wheel local-dir ../json-wheel-1.0.6
+dep json-static remote-tar-bz2
+  http://martin.jambon.free.fr/json-static-0.9.8.tar.bz2
 
-    dep ounit remote-tar-gz
-      http://forge.ocamlcore.org/frs/download.php/495/ounit-1.1.0.tar.gz
+dep lwt local-dir ../lwt-2.3.2
 
-    dep pcre-ocaml remote-tar-bz2
-      http://hg.ocaml.info/release/pcre-ocaml/archive/release-6.2.3.tar.bz2
-    dep ocamlnet local-dir ../ocamlnet/work
-    dep json-wheel local-dir ../json-wheel-1.0.6
-    dep json-static remote-tar-bz2
-      http://martin.jambon.free.fr/json-static-0.9.8.tar.bz2
+dep ocaml-substrings hg ssh://some-dev-server//repo/ocaml-substrings
+dep ocaml_monad_io hg ssh://some-dev-server//repo/ocaml_monad_io
+dep ocaml-iteratees hg ssh://some-dev-server//repo/ocaml-iteratees
+dep dumbstreaming hg ssh://some-dev-server//repo/dumbstreaming
 
-    dep lwt local-dir ../lwt-2.3.2
+dep cadastr hg ssh://some-dev-server//repo/cadastr
+dep parvel hg ssh://some-dev-server//repo/parvel#1bc1c224051c
 
-    dep ocaml-substrings hg ssh://some-dev-server//repo/ocaml-substrings
-    dep ocaml_monad_io hg ssh://some-dev-server//repo/ocaml_monad_io
-    dep ocaml-iteratees hg ssh://some-dev-server//repo/ocaml-iteratees
-    dep dumbstreaming hg ssh://some-dev-server//repo/dumbstreaming
+dep postgresql hg http://hg.ocaml.info/release/postgresql-ocaml
+dep amall hg ssh://some-dev-server//repo/amall
+```
 
-    dep cadastr hg ssh://some-dev-server//repo/cadastr
-    dep parvel hg ssh://some-dev-server//repo/parvel#1bc1c224051c
+### Hints
 
-    dep postgresql hg http://hg.ocaml.info/release/postgresql-ocaml
-    dep amall hg ssh://some-dev-server//repo/amall
-
-  So, it is usable and useful for some of developers.
-
-
-Practical hints
-
-  The version 1.0 is very limited, the real world is much more complex.
-We are trying to integrate features in barbra, but it's impossible before
+Version 1.0 is very limited, the real world is much more complex. We
+are trying to integrate features in barbra, but it's impossible without
 deep thinking.
 
-  But sometimes one needs to build project, that can be built much
-harder than "configure + make all + make install".  For example, some
-projects build only bytecode libraries on "make all" (and we need to
-"make opt" to compile native code libraries), some projects require
-some specific ./configure options.
+But sometimes one needs to build project, that can be built much
+harder than `configure && make all && make install`.  For example,
+some projects build only bytecode libraries on `make all` (and
+we need to `make opt` to compile native code libraries), some projects
+require specific `./configure` flags.
 
-  The current workarounds are ugly, but they work in simple cases
+The current workarounds are ugly, but they work in simple cases
 (not in general, not for "making patches for upstream").
 
 1. If you need to modify configure or makefile invocation, first
-copy/clone the sources to some private directory (for example,
-take a look at "dep json-wheel local-dir ../json-wheel-1.0.6" above),
-then modify the sources to make it work.
-   In the text below we assume you have copied sources to local
-private directory.
+   copy or clone the sources to some private directory (for example,
+   take a look at `dep json-wheel local-dir ../json-wheel-1.0.6` above),
+   then modify the sources to make it work.
+   In the text below we assume you have copied sources to local private directory.
 
-2. If you need to pass additional options to ./configure,
-rename configure script, then write your own ./configure like this:
+2. If you need to pass additional options to `./configure`,
+   rename configure script, then write your own ./configure like this:
 
-    #!/bin/sh
-    . ./configure-orig --disable-libev $*
+```bash
+#!/bin/sh
+. ./configure-orig --disable-libev $*
+```
 
-3. If you need to build makefile's targets other than "all",
-rename "all" target to "all_old" and write new target "all":
+3. If you need to build Makefile's targets other than `"all"`,
+   rename `"all"` target to `"all_old"` and write new target `"all"`:
 
-    all : all_old opt
+```makefile
+all : all_old opt
+```
 
 (* OASIS_START *)
 (* DO NOT EDIT (digest: 0334a6ea39277bb2ed53e632eff63736) *)
