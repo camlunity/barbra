@@ -144,19 +144,14 @@ Version 1 configuration file simply lists required packages' names
 along with source location. Config syntax is pretty straightforward:
 
 * Any config's line can be the comment (matching regexp /^\s*#/).
-* The first uncommented line must be:
-
-    version 1
-
-  This allows developers to modify the format of configuration file later.
+* The first uncommented line must be *version*, this allows developers
+  to modify the format of configuration file later.
 * **One** dependency per line! the format is:
-
-    dep  <package_name>  <retrieving_method>  <url>
-
+  `dep  <package_name>  <retrieving_method>  <url>`.
   It's assumed that every field but last does not contain whitespaces,
   and whitespace delimit the fields. The last field, *url*, may contain
   whitespace inside it, but not before or after it. See below for
-  available *retrieving_method*s.
+  available *retrieving_methods*.
 * Dependencies are processed sequentially one-by-one.
 * Duplicating packages are not allowed.
 
@@ -263,14 +258,10 @@ The current workarounds are ugly, but they work in simple cases
 2. If you need to pass additional options to `./configure`,
    rename configure script, then write your own ./configure like this:
 
-```bash
-#!/bin/sh
-. ./configure-orig --disable-libev $*
-```
+        #!/bin/sh
+        . ./configure-orig --disable-libev $*
 
 3. If you need to build Makefile's targets other than `"all"`,
    rename `"all"` target to `"all_old"` and write new target `"all"`:
 
-```makefile
-all : all_old opt
-```
+        all : all_old opt
