@@ -23,39 +23,37 @@ let cleanup () =
 let build_deps () =
   let rec go = function
     | [] -> Log.info "Dependencies built successfully!"
-    | (hname, htyp) :: tconf ->
+    | ({ name; package } as entry) :: conf ->
       let go_temp_dir project_path =
-        go &
-          (hname, Temporary (`Directory, project_path))
-          :: tconf
-      in begin match htyp with
+        go & { entry with package = Temporary (`Directory, project_path) }
+          :: conf
+      in begin match package with
         | Remote (remote_type, url) ->
           let source = new Source.remote url in
           let project_path = Res.exn_res & source#fetch ~dest_dir:tmp_dir
-          in go &
-            (hname,
-               Temporary ((remote_type :> local_type), project_path))
-            :: tconf
+          in go & { entry with package =
+              Temporary ((remote_type :> local_type), project_path) }
+            :: conf
         | Local ((#remote_type as archive_type), local_path) ->
           let source = new Source.archive archive_type local_path in
           let project_path = Res.exn_res &
-            source#fetch ~dest_dir:(tmp_dir </> hname)
+            source#fetch ~dest_dir:(tmp_dir </> name)
           in go_temp_dir project_path
         | VCS (vcs_type, url) ->
           let source = new Source.vcs vcs_type url in
           let project_path = Res.exn_res &
-            source#fetch ~dest_dir:(tmp_dir </> hname)
+            source#fetch ~dest_dir:(tmp_dir </> name)
           in go_temp_dir project_path
         | Local (`Directory, path)
         | Bundled (`Directory, path) ->
           let source = new Source.directory path in
           let project_path = Res.exn_res &
-            source#fetch ~dest_dir:(tmp_dir </> hname) in
+            source#fetch ~dest_dir:(tmp_dir </> name) in
           go_temp_dir project_path
         | Bundled ((#remote_type as archive_type), file_path) ->
           let source = new Source.archive archive_type file_path in
           let project_path = Res.exn_res &
-            source#fetch ~dest_dir:(tmp_dir </> hname)
+            source#fetch ~dest_dir:(tmp_dir </> name)
           in begin
             Log.debug "Keeping successfully unpacked bundled %S" file_path;
             go_temp_dir project_path
@@ -63,7 +61,7 @@ let build_deps () =
         | Temporary ((#remote_type as archive_type), file_path) ->
           let source = new Source.archive archive_type file_path in
           let project_path = Res.exn_res &
-            source#fetch ~dest_dir:(tmp_dir </> hname)
+            source#fetch ~dest_dir:(tmp_dir </> name)
           in begin
             Log.info "Removing successfully unpacked %S" file_path;
             Sys.remove file_path;
@@ -76,9 +74,9 @@ let build_deps () =
           (* kakadu recommends to allow user to decide: remove bundled
              temporary files or not. *)
           let () = Fs_util.remove_directory_recursive project_path in
-          go & (hname, Installed) :: tconf
+          go & { entry with package = Installed } :: conf
         | Installed ->
-          go tconf
+          go conf
       end
   in with_config go
 

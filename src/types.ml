@@ -13,8 +13,9 @@ type package =
   | Temporary of local_type * string
   | Installed
 
-type db = (string * package) list
-
+type entry = { name    : string
+             ; package : package
+             }
 
 let vcs_type_of_string s = match String.lowercase s with
   | "git"   -> Git

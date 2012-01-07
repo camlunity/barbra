@@ -44,12 +44,12 @@ module Keywords = struct
       | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
         VCS (vcs_type_of_string typ, src)
       | _ -> Log.error "unsupported package type: %S when source = %S\n" typ src
-    in (name, package)
+    in { name; package }
   )
 end
 
 module Parser : sig
-  val parse : string Stream.t -> db
+  val parse : string Stream.t -> entry list
 end = struct
   let parse_line_opt = function
     | ""   -> None
@@ -61,19 +61,20 @@ end = struct
 
   let check_dupes db =
     let sorted = List.sort
-      ~cmp:(fun (n1, _p1) (n2, _p2) -> String.compare n1 n2) db
+      ~cmp:(fun { name = name1; _ } { name = name2; _ } ->
+        String.compare name1 name2) db
     in
 
     match sorted with
       | [] -> ()
-      | (hn, _hp) :: t ->
+      | { name; _ } :: t ->
         ignore & List.fold_left
-          ~init:hn
-          ~f:(fun hn (hn', _hp') ->
-            if hn = hn' then
-              Log.error "brb.conf: duplicate dependency %S" hn
+          ~init:name
+          ~f:(fun name { name = name'; _ } ->
+            if name = name' then
+              Log.error "brb.conf: duplicate dependency %S" name
             else
-              hn'
+              name'
           ) t
 
   let parse =

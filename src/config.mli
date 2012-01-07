@@ -1,2 +1,4 @@
-val parse_config : string -> Types.db
-val parse_string : string -> Types.db
+open Types
+
+val parse_config : string -> entry list
+val parse_string : string -> entry list
