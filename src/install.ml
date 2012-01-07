@@ -168,8 +168,9 @@ let makefile : install_type = object
                    (* maybe we should always pass --prefix,
                       not only for oasis projects *)
               then
-                ["--prefix"; G.dep_dir]
-              else []
+                ["--prefix"; G.dep_dir] @ flags
+              else
+                flags
             in
             if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0 then
               exec (["./configure"] @ flags)

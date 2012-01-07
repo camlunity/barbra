@@ -80,6 +80,7 @@ stmt:
     in
     ($2, package, $5)
   }
+  | IDENT {Log.error "brb.conf: invalid keyword %S" $1}
 ;
 
 %%

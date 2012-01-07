@@ -55,7 +55,8 @@ and from_lexbuf lexbuf =
           ~init:([], [], [])
           ~f:(fun (ts, fs, ps) meta -> match meta with
             | `Make t  -> (t :: ts, fs, ps)
-            | `Flag f  -> (ts, f :: fs, ps)
+            | `Flag f  ->
+              (ts, (String.nsplit f " ") @ fs, ps)
             | `Patch p -> (ts, fs, p :: ps)
           )
         in
