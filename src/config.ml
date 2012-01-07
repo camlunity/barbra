@@ -76,10 +76,10 @@ end = struct
               hn'
           ) t
 
-  let parse s =
-    s |> Stream.map_filter parse_line_opt
-      |> Stream.to_list
-      |> Stream.tap check_dupes
+  let parse =
+    Stream.map_filter parse_line_opt @>
+    Stream.to_list @>
+    Stream.tap check_dupes
 end
 
 let get_config_version s = match Stream.next_opt s with
