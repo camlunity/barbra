@@ -1,4 +1,4 @@
 open Types
 
-val parse_config : string -> entry list
-val parse_string : string -> entry list
+val from_string : string -> dep list
+val from_file   : string -> dep list

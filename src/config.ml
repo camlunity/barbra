@@ -4,113 +4,59 @@ open Types
 
 module List = ListLabels
 
-module Keywords = struct
-  let guess_archive s ~succ ~fail =
-    let ext = Filename.check_suffix s in
-    if ext ".tar.gz" then
-      succ `TarGz
-    else if ext ".tar.bz2" then
-      succ `TarBzip2
-    else if ext ".tar" then
-      succ `Tar
-    else
-      fail ()
+let check_dupes deps =
+  let sorted = List.sort
+    ~cmp:(fun { name = name1; _ } { name = name2; _ } ->
+      String.compare name1 name2) deps
+  in
 
-  let dep args = Scanf.sscanf args " %s %s %S " (fun name typ src ->
-    let package = match String.lowercase typ with
-      | "remote" ->
-        guess_archive src
-          ~succ:(fun x -> Remote (x,src))
-          ~fail:(fun () -> Log.error "can't guess remote archive format: %S\n" typ)
-      | "remote-tar-gz"  -> Remote (`TarGz, src)
-      | "remote-tar-bz2" -> Remote (`TarBzip2, src)
-      | "remote-tar"     -> Remote (`Tar, src)
-      | "local" ->
-        guess_archive src
-          ~succ:(fun x -> Local (x, src))
-          ~fail:(fun () -> Log.error "can't guess local archive format: %S\n" typ)
-      | "local-tar-gz" -> Local (`TarGz, src)
-      | "local-tar-bz2" -> Local (`TarBzip2, src)
-      | "local-tar" -> Local (`Tar, src)
-      | "local-dir" -> Local (`Directory, src)
-      | "bundled-dir" -> Bundled (`Directory, src)
-      | "bundled" ->
-        guess_archive src
-          ~succ:(fun x -> Bundled (x,src))
-          ~fail:(fun () -> Log.error "can't guess bundle's archive format: %S\n" typ)
-      | "bundled-tar" -> Bundled (`Tar, src)
-      | "bundled-tar-gz" -> Bundled (`TarGz, src)
-      | "bundled-tar-bz2" -> Bundled (`TarBzip2, src)
-      | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
-        VCS (vcs_type_of_string typ, src)
-      | _ -> Log.error "unsupported package type: %S when source = %S\n" typ src
-    in { name; package }
-  )
-end
+  match sorted with
+    | [] -> ()
+    | { name; _ } :: t ->
+      ignore & List.fold_left
+        ~init:name
+        ~f:(fun name { name = name'; _ } ->
+          if name = name' then
+            Log.error "brb.conf: duplicate dependency %S" name
+          else
+            name'
+        ) t
 
-module Parser : sig
-  val parse : string Stream.t -> entry list
-end = struct
-  let parse_line_opt = function
-    | ""   -> None
-    | line ->
-      let (keyword, args) = String.split line " " in
-      some & match String.lowercase keyword with
-        | "dep" -> Keywords.dep args
-        | _     -> Log.error "Invalid keyword: %S" keyword
+let rec from_file path =
+  let ic = open_in path in
+  try
+    let deps = from_lexbuf (Lexing.from_channel ic) in
+    close_in ic;
+    deps
+  with exc ->
+    close_in ic;
+    raise exc
 
-  let check_dupes db =
-    let sorted = List.sort
-      ~cmp:(fun { name = name1; _ } { name = name2; _ } ->
-        String.compare name1 name2) db
-    in
+and from_string s =
+  from_lexbuf (Lexing.from_string s)
 
-    match sorted with
-      | [] -> ()
-      | { name; _ } :: t ->
-        ignore & List.fold_left
-          ~init:name
-          ~f:(fun name { name = name'; _ } ->
-            if name = name' then
-              Log.error "brb.conf: duplicate dependency %S" name
-            else
-              name'
-          ) t
-
-  let parse =
-    Stream.map_filter parse_line_opt @>
-    Stream.to_list @>
-    Stream.tap check_dupes
-end
-
-let get_config_version s = match Stream.next_opt s with
-  | None -> Log.error "brb.conf empty!"
-  | Some line ->
-    try
-      Scanf.sscanf (String.lowercase line) " version %s " identity
-    with Scanf.Scan_failure _ ->
-      Log.error "brb.conf: missing version!"
-
-let parse_stream s =
-  s
-  |> Stream.map (String.strip ~chars:"\r\n")
-  |> Stream.map_filter (fun line ->
-    (* Note(superbobry): filter out *all* lines with comments, i. e.
-       lines containing '#' character. This is probably too silly. *)
-    if String.contains line '#' then None else Some line)
-  |> fun s -> begin match get_config_version s with
-      | v when v = Global.version -> Parser.parse s
-      | v -> Log.error
-        "brb.conf: unsupported version %S, try %S?"
+and from_lexbuf lexbuf =
+  match Parser.main Lexer.token lexbuf with
+    | (v, _) when v <> Global.version ->
+      Log.error "brb.conf: unsupported version %S, try %S?"
         v
         Global.version
-  end
+    | (_, deps) ->
+      let deps = List.map deps ~f:(fun (name, package, metas) ->
+        (* Note(superbobry): fold an assorted list of meta fields into
+           three categories -- make targets, configure flags and patches;
+           the order is preserved. *)
+        let (targets, flags, patches) = List.fold_left metas
+          ~init:([], [], [])
+          ~f:(fun (ts, fs, ps) meta -> match meta with
+            | `Make t  -> (t :: ts, fs, ps)
+            | `Flag f  -> (ts, f :: fs, ps)
+            | `Patch p -> (ts, fs, p :: ps)
+          )
+        in
 
-let parse_string st =
-  let lines = String.nsplit st "\n" in
-  parse_stream (Stream.of_list lines)
-
-let parse_config filename =
-  filename
-  |> Filew.stream_of_file_lines
-  |> parse_stream
+        { name; package; targets; flags; patches })
+      in begin
+        check_dupes deps;
+        deps
+      end

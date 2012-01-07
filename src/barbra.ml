@@ -9,7 +9,7 @@ include Global
 let with_config f =
   let conf = base_dir </> brb_conf in
   if Sys.file_exists conf then
-    f (Config.parse_config conf)
+    f (Config.from_file conf)
   else
     Log.error "can't find brb.conf in %S" base_dir
 
@@ -23,7 +23,7 @@ let cleanup () =
 let build_deps () =
   let rec go = function
     | [] -> Log.info "Dependencies built successfully!"
-    | ({ name; package } as entry) :: conf ->
+    | ({ name; package; _ } as entry) :: conf ->
       let go_temp_dir project_path =
         go & { entry with package = Temporary (`Directory, project_path) }
           :: conf
