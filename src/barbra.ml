@@ -23,7 +23,7 @@ let cleanup () =
 let build_deps () =
   let rec go = function
     | [] -> Log.info "Dependencies built successfully!"
-    | ({ name; package; _ } as entry) :: conf ->
+    | ({ name; package; flags; targets; _ } as entry) :: conf ->
       let go_temp_dir project_path =
         go & { entry with package = Temporary (`Directory, project_path) }
           :: conf
@@ -69,7 +69,12 @@ let build_deps () =
           end
         | Temporary (`Directory, project_path) ->
           let () = Res.exn_res &
-            Install.makefile#install ~source_dir:project_path in
+            Install.makefile#install
+            ~source_dir:project_path
+            ~flags
+            ~targets
+          in
+
           Log.info "Removing successfully built %S" project_path;
           (* kakadu recommends to allow user to decide: remove bundled
              temporary files or not. *)
@@ -81,12 +86,14 @@ let build_deps () =
   in with_config go
 
 
-let build_project () =
-  let () = Log.info "Building the project (from %S)" base_dir in
-  let () = Res.exn_res &
-    Install.makefile#install ~source_dir:base_dir in
+let build_project () = begin
+  Log.info "Building the project (from %S)" base_dir;
+  Res.exn_res & Install.makefile#install
+    ~source_dir:base_dir
+    ~flags:[]
+    ~targets:[];
   Log.info "Project built succesfully!"
-
+end
 
 let deps_are_built () = Filew.is_directory dep_dir
 

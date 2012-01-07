@@ -150,7 +150,7 @@ let run_with_env cmd =
 
 
 let makefile : install_type = object
-  method install ~source_dir =
+  method install ~source_dir ~flags ~targets =
 (*
     let open WithM in
     let open Res in
@@ -163,7 +163,7 @@ let makefile : install_type = object
       WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
       with_the_env & fun () ->
           (if Sys.file_exists "configure" then
-            let add_opts =
+            let flags =
               if Sys.file_exists "_oasis"
                    (* maybe we should always pass --prefix,
                       not only for oasis projects *)
@@ -172,13 +172,13 @@ let makefile : install_type = object
               else []
             in
             if (Unix.stat "configure").Unix.st_perm land 0o100 <> 0 then
-              exec (["./configure"] @ add_opts)
+              exec (["./configure"] @ flags)
             else
-              exec (["sh" ; "./configure"] @ add_opts)
+              exec (["sh" ; "./configure"] @ flags)
           else
             Res.return ()) >>= fun () ->
         let make = getenv ~default:"make" "MAKE" in
-        exec [make; "all"] >>= fun () ->
+        exec (make :: targets) >>= fun () ->
         exec [make; "install"]
     end
 end

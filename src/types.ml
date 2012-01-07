@@ -52,7 +52,9 @@ class type source_type = object
 end
 
 class type install_type = object
-  method install : source_dir:string -> (unit, exn) res
+  method install : source_dir:string ->
+                   flags:string list ->
+                   targets:string list -> (unit, exn) res
   (** Installs packages, located in [source_dir]. *)
 end
 
