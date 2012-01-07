@@ -48,40 +48,42 @@ module Keywords = struct
   )
 end
 
-let parse_line_opt = function
-  | ""   -> None
-  | line ->
-    let (keyword, args) = String.split line " " in
-    some & match keyword with
-      | "dep" -> Keywords.dep args
-      | _     -> Log.error "Invalid keyword: %S" keyword
+module V1 : sig
+  val parse : string Stream.t -> db
+end = struct
+  let parse_line_opt = function
+    | ""   -> None
+    | line ->
+      let (keyword, args) = String.split line " " in
+      some & match keyword with
+        | "dep" -> Keywords.dep args
+        | _     -> Log.error "Invalid keyword: %S" keyword
 
-let check_dupes_v1 db =
-  let sorted = List.sort
-    ~cmp:(fun (n1, _p1) (n2, _p2) -> String.compare n1 n2) db
-  in
+  let check_dupes db =
+    let sorted = List.sort
+      ~cmp:(fun (n1, _p1) (n2, _p2) -> String.compare n1 n2) db
+    in
 
-  match sorted with
-    | [] -> ()
-    | (hn, _hp) :: t ->
-      ignore & List.fold_left
-        ~init:hn
-        ~f:(fun hn (hn', _hp') ->
-          if hn = hn' then
-            Log.error "brb.conf: duplicate dependency %S" hn
-          else
-            hn'
-        ) t
+    match sorted with
+      | [] -> ()
+      | (hn, _hp) :: t ->
+        ignore & List.fold_left
+          ~init:hn
+          ~f:(fun hn (hn', _hp') ->
+            if hn = hn' then
+              Log.error "brb.conf: duplicate dependency %S" hn
+            else
+              hn'
+          ) t
 
-let parse_config_v1 s =
-  s
-  (* |> Stream.map (fun line -> let () = dbg "line: %s" line in line) *)
-  |> Stream.map_filter parse_line_opt
-  |> Stream.to_list
-  |> fun r -> begin
-       check_dupes_v1 r;
+  let parse s =
+    s |> Stream.map_filter parse_line_opt
+      |> Stream.to_list
+      |> fun r -> begin
+       check_dupes r;
        r
-     end
+      end
+end
 
 let get_config_version s = match Stream.next_opt s with
   | None -> Log.error "brb.conf empty!"
@@ -100,7 +102,7 @@ let parse_stream s =
     if String.contains line '#' then None else Some line)
   |> fun s ->
     begin match get_config_version s with
-      | "1" -> parse_config_v1 s
+      | "1" -> V1.parse s
       | v   -> Log.error "brb.conf: unknown version %S" v
     end
 
