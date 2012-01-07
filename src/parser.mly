@@ -29,7 +29,7 @@
 %%
 
 main:
-  | VERSION IDENT stmt_list EOF {($2, $3)}
+  | VERSION IDENT stmt_list EOF {($2, List.rev $3)}
 ;
 
 meta_list:
