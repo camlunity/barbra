@@ -48,7 +48,7 @@ module Keywords = struct
   )
 end
 
-module V1 : sig
+module Parser : sig
   val parse : string Stream.t -> db
 end = struct
   let parse_line_opt = function
@@ -97,11 +97,13 @@ let parse_stream s =
     (* Note(superbobry): filter out *all* lines with comments, i. e.
        lines containing '#' character. This is probably too silly. *)
     if String.contains line '#' then None else Some line)
-  |> fun s ->
-    begin match get_config_version s with
-      | "1" -> V1.parse s
-      | v   -> Log.error "brb.conf: unknown version %S" v
-    end
+  |> fun s -> begin match get_config_version s with
+      | v when v = Global.version -> Parser.parse s
+      | v -> Log.error
+        "brb.conf: unsupported version %S, try %S?"
+        v
+        Global.version
+  end
 
 let parse_string st =
   let lines = String.nsplit st "\n" in

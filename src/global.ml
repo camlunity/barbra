@@ -1,6 +1,6 @@
 open Common
 
-let version = "1.0"
+let version = "1"
 
 let brb_conf = "brb.conf"  (* file name without paths *)
 
