@@ -79,10 +79,7 @@ end = struct
   let parse s =
     s |> Stream.map_filter parse_line_opt
       |> Stream.to_list
-      |> fun r -> begin
-       check_dupes r;
-       r
-      end
+      |> Stream.tap check_dupes
 end
 
 let get_config_version s = match Stream.next_opt s with

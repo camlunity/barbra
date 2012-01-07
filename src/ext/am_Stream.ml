@@ -50,6 +50,11 @@ module Stream
         ]
     ;
 
+    value tap f s = begin
+      ignore (f s);
+      s
+    end;
+
     value is_empty s =
       try (Stream.empty s; True)
       with [ Stream.Failure -> False ]
