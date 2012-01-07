@@ -36,6 +36,11 @@ and from_string s =
   from_lexbuf (Lexing.from_string s)
 
 and from_lexbuf lexbuf =
+  let fixup = function
+    | { targets = []; _ } as p -> { p with targets = ["all"] }
+    | p -> p
+  in
+
   match Parser.main Lexer.token lexbuf with
     | (v, _) when v <> Global.version ->
       Log.error "brb.conf: unsupported version %S, try %S?"
@@ -55,7 +60,7 @@ and from_lexbuf lexbuf =
           )
         in
 
-        { name; package; targets; flags; patches })
+        fixup { name; package; targets; flags; patches })
       in begin
         check_dupes deps;
         deps
