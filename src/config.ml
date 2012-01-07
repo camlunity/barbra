@@ -16,7 +16,7 @@ module Keywords = struct
     else
       fail ()
 
-  let dep args = Scanf.sscanf args " %s %s %s " (fun name typ src ->
+  let dep args = Scanf.sscanf args " %s %s %S " (fun name typ src ->
     let package = match String.lowercase typ with
       | "remote" ->
         guess_archive src
@@ -55,7 +55,7 @@ end = struct
     | ""   -> None
     | line ->
       let (keyword, args) = String.split line " " in
-      some & match keyword with
+      some & match String.lowercase keyword with
         | "dep" -> Keywords.dep args
         | _     -> Log.error "Invalid keyword: %S" keyword
 
