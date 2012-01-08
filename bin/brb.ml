@@ -58,4 +58,12 @@ and () =
 
 
 let () =
-  ArgExt.parse ()
+  try
+    ArgExt.parse ()
+  with exc ->
+    if Printexc.backtrace_status () then
+      Printexc.print_backtrace stderr;
+
+    Log.error "%s" & match exc with
+      | Failure msg -> msg
+      | _ -> Printexc.to_string exc
