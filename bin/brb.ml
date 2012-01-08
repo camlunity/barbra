@@ -15,7 +15,7 @@ and () = SubCommand.register & SubCommand.make
   Barbra.build_deps
 and () = SubCommand.register & SubCommand.make
   ~name:"rebuild"
-  ~synopsis:"Rebuild all the dependencies along with the project"
+  ~synopsis:"Rebuild all dependencies along with the project"
   Barbra.rebuild
 and () = SubCommand.register & SubCommand.make
   ~name:"rebuild-deps"
@@ -55,6 +55,7 @@ and () =
   in
 
   SubCommand.(register { cmd with anon = (:=) arg })
+
 
 let () =
   ArgExt.parse ()
