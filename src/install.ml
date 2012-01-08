@@ -9,19 +9,18 @@ let (>>=) = Res.(>>=)
 
 
 let makefile : install_type = object
-  method install ~source_dir ~flags ~targets =
-    begin
-      G.create_dirs ();
-      Env.write_env ();
-      Log.info "Starting Makefile build";
+  method install ~source_dir ~flags ~targets ~patches = begin
+    G.create_dirs ();
+    Env.write_env ();
+    Log.info "Starting Makefile build";
 
-      WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
-        Env.with_env & fun () ->
-          (if Sys.file_exists "configure" then
+    WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
+      Env.with_env & fun () ->
+        (if Sys.file_exists "configure" then
             let flags =
               if Sys.file_exists "_oasis"
-                   (* maybe we should always pass --prefix,
-                      not only for oasis projects *)
+              (* maybe we should always pass --prefix,
+                 not only for oasis projects *)
               then
                 ["--prefix"; G.dep_dir] @ flags
               else
@@ -31,10 +30,10 @@ let makefile : install_type = object
               exec (["./configure"] @ flags)
             else
               exec (["sh" ; "./configure"] @ flags)
-          else
+         else
             Res.return ()) >>= fun () ->
         let make = getenv ~default:"make" "MAKE" in
         exec (make :: targets) >>= fun () ->
         exec [make; "install"]
-    end
+  end
 end

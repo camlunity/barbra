@@ -23,7 +23,7 @@ let cleanup () =
 let build_deps () =
   let rec go = function
     | [] -> Log.info "Dependencies built successfully!"
-    | ({ name; package; flags; targets; _ } as entry) :: conf ->
+    | ({ name; package; flags; targets; patches } as entry) :: conf ->
       let go_temp_dir project_path =
         go & { entry with package = Temporary (`Directory, project_path) }
           :: conf
@@ -73,6 +73,7 @@ let build_deps () =
             ~source_dir:project_path
             ~flags
             ~targets
+            ~patches
           in
 
           Log.info "Removing successfully built %S" project_path;
@@ -91,7 +92,8 @@ let build_project () = begin
   Res.exn_res & Install.makefile#install
     ~source_dir:base_dir
     ~flags:[]
-    ~targets:[];
+    ~targets:[]
+    ~patches:[];
   Log.info "Project built succesfully!"
 end
 
