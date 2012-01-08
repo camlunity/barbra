@@ -25,8 +25,7 @@ and () = SubCommand.register & SubCommand.make
   ~name:"clean"
   ~synopsis:"Remove '_dep' directory with built dependencies"
   Barbra.cleanup
-
-let () =
+and () =
   let args = ref [] in
   let cmd = SubCommand.make
     ~name:"run"
@@ -39,7 +38,23 @@ let () =
   in
 
   SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args})
+and () =
+  let arg = ref "" in
+  let cmd = SubCommand.make
+    ~name:"help"
+    ~synopsis:"Display help for a subcommand"
+    ~help:("This subcommand display help of other subcommands or of " ^
+           "'all' subcommands.")
+    ~usage:"[subcommand|all]"
+    (fun () ->
+      let hext = match !arg with
+        | ""    -> `NoSubCommand
+        | "all" -> `AllSubCommands
+        | _     -> `SubCommand !arg
+      in ArgExt.pp_print_help hext Format.std_formatter ())
+  in
 
+  SubCommand.(register { cmd with anon = (:=) arg })
 
 let () =
   ArgExt.parse ()
