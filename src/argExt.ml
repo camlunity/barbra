@@ -27,15 +27,6 @@ let usage_msg = "brb [global-options*] subcommand [subcommand-options*]"
 
 (* Pretty printers. *)
 
-let pp_print_underlined c fmt s =
-  pp_print_string fmt s;
-  pp_print_newline fmt ();
-  pp_print_string fmt (String.make (String.length s) c)
-
-let pp_print_endblock fmt () =
-  pp_print_newline fmt ();
-  pp_print_newline fmt ()
-
 let pp_print_specs fmt specs =
   let help_specs = List.rev_append
     (List.rev_map ~f:(fun (name, _, help) -> (name, help)) specs)
@@ -53,6 +44,8 @@ let pp_print_specs fmt specs =
 
 let pp_print_cmd fmt { name; help; usage; specs; _ } =
   pp_print_underlined '-' fmt (sprintf "Subcommand %s" name);
+  pp_print_endblock fmt ();
+
   pp_print_string fmt help;
   pp_print_endblock fmt ();
 
@@ -93,6 +86,7 @@ let pp_print_help hext fmt () =
         ~init:()
         ~f:(fun _ cmd () -> pp_print_cmd fmt cmd)
 
+
 (* Hardcore subcommand parsing; solely taken from OASIS. *)
 
 let parse () =
@@ -110,14 +104,18 @@ let parse () =
   in
 
   let handle_error exc hext =
-    match exc with
+    let get_bad txt =
+      match String.nsplit txt "\n" with
+        | [] -> "Unknown error on the command line"
+        | fst :: _ -> fst
+    in match exc with
       | Arg.Bad txt ->
         pp_print_help hext err_formatter ();
-        prerr_endline txt;
+        prerr_endline (get_bad txt);
         exit 2
       | Arg.Help _txt ->
         pp_print_help hext std_formatter ();
-        exit 0;
+        exit 0
       | _ ->
         raise exc
   in

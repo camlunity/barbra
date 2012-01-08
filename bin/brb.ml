@@ -4,13 +4,13 @@ open Common
 let () = SubCommand.register & SubCommand.make
   ~name:"build"
   ~synopsis:"Build the project in the current directory"
-  ~help:("Assumes that '_dep' directory doesn't exist or contains " ^
+  ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
          "*already* built dependencies, listed in 'brb.conf'.")
   Barbra.build
 and () = SubCommand.register & SubCommand.make
   ~name:"build-deps"
   ~synopsis:"Build project dependencies"
-  ~help:("Assumes that '_dep' directory doesn't exist or contains " ^
+  ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
          "*already* built dependencies, listed in 'brb.conf'.")
   Barbra.build_deps
 and () = SubCommand.register & SubCommand.make
@@ -31,10 +31,9 @@ let () =
   let cmd = SubCommand.make
     ~name:"run"
     ~synopsis:"Run a command in 'barbra' environment"
-    ~help:("Uses '_dep/env.sh' to point some of 'ocamlfind' " ^
-              "environmental variables to the '_dep' directory, which " ^
-              "allows 'ocamlfind' to use binaries and libraries, installed " ^
-              "by 'brb'.")
+    ~help:("Uses '_dep/env.sh' to point some of 'ocamlfind' environmental\n" ^
+           "variables to the '_dep' directory, which allows 'ocamlfind'  \n" ^
+           "to use binaries and libraries, installed by 'brb'.")
     ~usage:"cmd [args*]"
     (fun () -> Barbra.run_with_env !args)
   in

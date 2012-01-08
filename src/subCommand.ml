@@ -13,7 +13,7 @@ module StringMap = Map.Make(String)
 
 let all = ref StringMap.empty
 
-let make ~name ~synopsis ?(help="")p ?(usage="") main =
+let make ~name ~synopsis ?(help="") ?(usage="") main =
   { name; synopsis; help; usage
   ; specs = []
   ; anon = (Log.error "Don't know what to do with %S")
