@@ -17,12 +17,16 @@ Flag tests
 Executable brb
   Path:       bin
   MainIs:     brb.ml
+  NativeOpt:  -w @a
+  ByteOpt:    -w @a
 
 Library barbra
   Path:       src
   Modules:    Barbra
   InternalModules: Config, Source, Install, Global, Types, Log, Syscaps,
                    Lexer, Parser, Env
+  NativeOpt:  -w @a
+  ByteOpt:    -w @a
 
 SourceRepository github
   Type:     git

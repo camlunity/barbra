@@ -1,9 +1,17 @@
 # OASIS_START
-# DO NOT EDIT (digest: 34a46702a15dd4f48a36aaf3e752db45)
+# DO NOT EDIT (digest: c4200a929f60e25c02d7ca2acc479e9e)
 # Executable test
 # Library barbra
 "src": include
+<src/barbra.{cma,cmxa}>: oasis_library_barbra_byte
+<src/*.ml{,i}>: oasis_library_barbra_byte
+<src/barbra.{cma,cmxa}>: oasis_library_barbra_native
+<src/*.ml{,i}>: oasis_library_barbra_native
 # Executable brb
+"bin/brb.byte": oasis_executable_brb_byte
+<bin/*.ml{,i}>: oasis_executable_brb_byte
+"bin/brb.byte": oasis_executable_brb_native
+<bin/*.ml{,i}>: oasis_executable_brb_native
 # OASIS_STOP
 
 <src/*.ml{,i}> : warn_A

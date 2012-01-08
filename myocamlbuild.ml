@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 266ec8570caf93778e1b8a380735e0c6) *)
+(* DO NOT EDIT (digest: 64af5c33be66a2941f3158c276e89778) *)
 module OASISGettext = struct
 # 21 "/tmp/packerbuild-1000/ocaml-oasis/ocaml-oasis/src/oasis-0.2.0/src/oasis/OASISGettext.ml"
   
@@ -453,7 +453,33 @@ let package_default =
   {
      MyOCamlbuildBase.lib_ocaml = [("src/barbra", ["src"])];
      lib_c = [];
-     flags = [];
+     flags =
+       [
+          (["oasis_library_barbra_byte"; "ocaml"; "link"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_library_barbra_native"; "ocaml"; "link"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_library_barbra_byte"; "ocaml"; "ocamldep"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_library_barbra_native"; "ocaml"; "ocamldep"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_library_barbra_byte"; "ocaml"; "compile"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_library_barbra_native"; "ocaml"; "compile"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_executable_brb_byte"; "ocaml"; "link"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_executable_brb_native"; "ocaml"; "link"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_executable_brb_byte"; "ocaml"; "ocamldep"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_executable_brb_native"; "ocaml"; "ocamldep"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_executable_brb_byte"; "ocaml"; "compile"; "byte"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])]);
+          (["oasis_executable_brb_native"; "ocaml"; "compile"; "native"],
+            [(OASISExpr.EBool true, S [A "-w"; A "@a"])])
+       ];
      }
   ;;
 

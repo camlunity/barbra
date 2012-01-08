@@ -12,6 +12,9 @@ let makefile : install_type = object
   method install ~source_dir ~flags ~targets ~patches = begin
     G.create_dirs ();
     Env.write_env ();
+
+    ignore patches;  (* apply patches here. *)
+
     Log.info "Starting Makefile build";
 
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
