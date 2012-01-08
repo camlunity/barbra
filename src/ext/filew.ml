@@ -1,4 +1,4 @@
-module Filename = Filename_new
+module Filename = Filename
 ;
 
 exception Error of string and string and exn
@@ -51,7 +51,7 @@ value with_file_out_gen flags mode fn func =
 ;
 
 
-value is_directory d = 
+value is_directory d =
   try
     Sys.file_exists d && Sys.is_directory d
   with
@@ -59,7 +59,7 @@ value is_directory d =
 ;
 
 
-value is_file d = 
+value is_file d =
   try
     Sys.file_exists d && (not (Sys.is_directory d))
   with
