@@ -1,10 +1,10 @@
 open Printf
 
 type level =
-  [ `Debug
-  | `Info
-  | `Warning
-  | `Error
+  [ `Debug    (* 3 *)
+  | `Info     (* 2 (default) *)
+  | `Warning  (* 1 *)
+  | `Error    (* 0 *)
   ]
 
 let char_of_level = function
@@ -12,6 +12,8 @@ let char_of_level = function
   | `Info    -> 'I'
   | `Warning -> 'W'
   | `Error   -> 'E'
+
+let verbosity = ref 2
 
 (* TODO(bobry): add verbosity & debug flags? *)
 let generic_message ~channel ~lvl msg =

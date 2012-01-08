@@ -24,7 +24,7 @@ Library barbra
   Path:       src
   Modules:    Barbra
   InternalModules: Config, Source, Install, Global, Types, Log, Syscaps,
-                   Lexer, Parser, Env
+                   Lexer, Parser, Env, Subcommand, ArgExt, FormatExt
   NativeOpt:  -w @a
   ByteOpt:    -w @a
 

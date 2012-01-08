@@ -1,69 +1,46 @@
-open Printf
+open Common
 
-let usage_txt = "\
-brb <command or option>:\n\
-\  help | --help         output this help\n\
-\  version | --version   output version\n\
-\  build                 build the project in the current directory,\n\
-\                        assuming that \"_dep\" either doesn't exist or\n\
-\                        contains built dependencies\n\
-\  clean                 remove built dependencies (\"_dep\" directory)\n\
-\  rebuild               rebuilds dependencies and the project\n\
-\  run cmd arg1 .. argN  run \"cmd arg1 .. argN\" with environment that\n\
-\                        allows ocamlfind use libraries installed in\n\
-\                        \"_dep\" and allows to run programs installed in\n\
-\                        \"_dep/bin\".  The same effect as with shell\n\
-\                        command \"( . _dep/env.sh ; cmd arg1 .. argN)\"\n\
-\                        when \"_dep/env.sh\" does exist\n\
-\  build-deps            build project's dependencies, assuming that\n\
-\                        \"_dep\" either doesn't exist or contains built\n\
-\                        dependencies\n\
-\  rebuild-deps          rebuild project's dependencies\n\
-"
+
+let () = SubCommand.register & SubCommand.make
+  ~name:"build"
+  ~synopsis:"Build the project in the current directory"
+  ~help:("Assumes that '_dep' directory doesn't exist or contains " ^
+         "*already* built dependencies, listed in 'brb.conf'.")
+  Barbra.build
+and () = SubCommand.register & SubCommand.make
+  ~name:"build-deps"
+  ~synopsis:"Build project dependencies"
+  ~help:("Assumes that '_dep' directory doesn't exist or contains " ^
+         "*already* built dependencies, listed in 'brb.conf'.")
+  Barbra.build_deps
+and () = SubCommand.register & SubCommand.make
+  ~name:"rebuild"
+  ~synopsis:"Rebuild all the dependencies along with the project"
+  Barbra.rebuild
+and () = SubCommand.register & SubCommand.make
+  ~name:"rebuild-deps"
+  ~synopsis:"Rebuild all project dependencies"
+  Barbra.rebuild_deps
+and () = SubCommand.register & SubCommand.make
+  ~name:"clean"
+  ~synopsis:"Remove '_dep' directory with built dependencies"
+  Barbra.cleanup
 
 let () =
-  let noargs cmd args =
-    if args <> [] then begin
-      eprintf "brb: command %S does not accept arguments" cmd;
-      exit 1
-    end else ()
+  let args = ref [] in
+  let cmd = SubCommand.make
+    ~name:"run"
+    ~synopsis:"Run a command in 'barbra' environment"
+    ~help:("Uses '_dep/env.sh' to point some of 'ocamlfind' " ^
+              "environmental variables to the '_dep' directory, which " ^
+              "allows 'ocamlfind' to use binaries and libraries, installed " ^
+              "by 'brb'.")
+    ~usage:"cmd [args*]"
+    (fun () -> Barbra.run_with_env !args)
   in
-  begin match List.tl (Array.to_list Sys.argv) with
-    | [] | ("--help" | "help") :: _ ->
-        printf "usage: %s%!" usage_txt
-    | ("--version" | "version") :: _ ->
-        printf "%s\n" Barbra.version
 
-    | "build" as c :: args ->
-        begin
-          noargs c args;
-          Barbra.build ();
-        end
-    | "run" :: cmd ->
-        Barbra.run_with_env cmd
-    | "clean" as c :: args ->
-        begin
-          noargs c args;
-          Barbra.cleanup ();
-        end
-    | "rebuild" as c :: args ->
-        begin
-          noargs c args;
-          Barbra.rebuild ();
-        end
+  SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args})
 
-    | "build-deps" as c :: args ->
-        begin
-          noargs c args;
-          Barbra.build_deps ();
-        end
 
-    | "rebuild-deps" as c :: args ->
-        begin
-          noargs c args;
-          Barbra.rebuild_deps ();
-        end
-
-    | cmd :: _ ->
-        eprintf "unknown command %S\n" cmd
-  end
+let () =
+  ArgExt.parse ()
