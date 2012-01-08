@@ -44,8 +44,10 @@ let exec_exitcode ?(redirects=`Std) args = Res.catch_exn (fun () ->
       let cmd = command_text_of_args args in
       let (stdin, stdout, stderr, redir_msg) = Lazy.force &
         match redirects with
-        | `Std -> std_redirects
-        | `Nul -> nul_redirects
+        (* Note(superbobry): command output is displayed only on
+           [`Info] level! *)
+        | `Std when !Log.verbosity = 2 -> std_redirects
+        | `Nul | _ -> nul_redirects
       in
 
       let () = Log.info "Running command %S%s" cmd redir_msg in
