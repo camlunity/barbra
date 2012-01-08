@@ -13,6 +13,12 @@ let stublibs_dir = lib_dir </> "stublibs"
 let etc_dir = dep_dir </> "etc"
 let env_sh = dep_dir </> "env.sh"
 
+let env = [ (`Prepend, "OCAMLPATH", lib_dir)
+          ; (`Prepend, "PATH", bin_dir)
+          ; (`Set, "OCAMLFIND_DESTDIR", lib_dir)
+          ; (`Prepend, "CAML_LD_LIBRARY_PATH", stublibs_dir)
+          ; (`Set, "OCAMLFIND_LDCONF", "ignore")
+          ]
 
 (** [create_dirs ()] Create initial directory structure for [brb]. *)
 let create_dirs =

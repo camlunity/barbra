@@ -7,6 +7,9 @@ let failwith fmt = Printf.ksprintf failwith fmt
 
 let (</>) = Filename.concat
 
+let getenv ?(default="") env_name =
+  try Unix.getenv env_name with Not_found -> default
+
 let command_text_of_args args =
   if args = []
   then "<empty command>"

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 702f2d71658fed895a53bc4d4df43dec)
+# DO NOT EDIT (digest: 1d1452e5a0358d47f468ae9d77e4d59e)
 Barbra
 Config
 Source
@@ -10,4 +10,5 @@ Log
 Syscaps
 Lexer
 Parser
+Env
 # OASIS_STOP

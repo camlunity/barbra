@@ -123,4 +123,4 @@ let rebuild_deps () = rebuild_gen ~proj:false ()
 
 
 let run_with_env cmd =
-  Res.exn_res (Install.run_with_env cmd)
+  Res.exn_res (Env.exec_with_env cmd)

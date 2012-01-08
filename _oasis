@@ -21,7 +21,8 @@ Executable brb
 Library barbra
   Path:       src
   Modules:    Barbra
-  InternalModules: Config, Source, Install, Global, Types, Log, Syscaps, Lexer, Parser
+  InternalModules: Config, Source, Install, Global, Types, Log, Syscaps,
+                   Lexer, Parser, Env
 
 SourceRepository github
   Type:     git
