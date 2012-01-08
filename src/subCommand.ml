@@ -27,7 +27,7 @@ and find name =
   try
     StringMap.find name !all
   with Not_found ->
-    failwith "Subcommand %S doesn't exist" name
+    failwithf "Subcommand %S doesn't exist" name
 
 and fold ~f ~init =
   StringMap.fold f !all init

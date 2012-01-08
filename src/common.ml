@@ -3,7 +3,7 @@ include Cd_Ops
 
 module Stream = Am_Stream.Stream
 
-let failwith fmt = Printf.ksprintf failwith fmt
+let failwithf fmt = Printf.ksprintf failwith fmt
 
 let (</>) = Filename.concat
 

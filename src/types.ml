@@ -26,7 +26,7 @@ let vcs_type_of_string s = match String.lowercase s with
   | "darcs" -> Darcs
   | "cvs"   -> CVS
   | "svn"   -> SVN
-  | _ -> failwith "unknown VCS type %S" s
+  | _ -> failwithf "unknown VCS type %S" s
 
 and string_of_vcs_type = function
   | Git     -> "git"
