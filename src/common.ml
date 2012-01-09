@@ -1,8 +1,6 @@
 include ExtString
 include Cd_Ops
 
-module Stream = Am_Stream.Stream
-
 let failwithf fmt = Printf.ksprintf failwith fmt
 
 let (</>) = Filename.concat
