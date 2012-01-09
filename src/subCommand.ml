@@ -16,7 +16,7 @@ let all = ref StringMap.empty
 let make ~name ~synopsis ?(help="") ?(usage="") main =
   { name; synopsis; help; usage
   ; specs = []
-  ; anon = (Log.error "Don't know what to do with %S")
+  ; anon = (failwithf "Don't know what to do with %S")
   ; main
   }
 
