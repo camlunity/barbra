@@ -283,3 +283,13 @@ module Sys
   end
 ;
 *)
+
+
+value rec sequence_
+ : ('a -> res unit 'e) -> list 'a -> res unit 'e
+ = fun f lst ->
+     match lst with
+     [ [] -> return ()
+     | [h :: t] -> f h >>= fun () -> sequence_ f t
+     ]
+;

@@ -146,3 +146,6 @@ module Sys
   end
 ;
 *)
+
+value sequence_ : ('a -> res unit 'e) -> list 'a -> res unit 'e
+;
