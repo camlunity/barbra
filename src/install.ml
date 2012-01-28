@@ -3,6 +3,7 @@ open Types
 open Printf
 open WithM
 
+module List = ListLabels
 module G = Global
 
 let (>>=) = Res.(>>=)
@@ -13,10 +14,14 @@ let makefile : install_type = object
     G.create_dirs ();
     Env.write_env ();
 
-    ignore patches;  (* apply patches here. *)
+    Log.info "Applying patches";
+    List.iter patches ~f:(fun p -> 
+        let abs_p = G.base_dir </> p in
+        exec_exn ["patch"; "-p1"; "-i"; abs_p];
+        Log.debug "Applied patch %S" p;
+    );
 
     Log.info "Starting Makefile build";
-
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
       Env.with_env & fun () ->
         (if Sys.file_exists "configure" then
