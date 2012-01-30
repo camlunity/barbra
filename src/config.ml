@@ -42,11 +42,11 @@ and from_lexbuf lexbuf =
   in
 
   match Parser.main Lexer.token lexbuf with
-    | (v, _) when v <> Global.version ->
+    | (v, _, _) when v <> Global.version ->
       Log.error "brb.conf: unsupported version %S, try %S?"
         v
         Global.version
-    | (_, deps) ->
+    | (_, deps, _incs) ->
       let deps = List.map deps ~f:(fun (name, package, metas) ->
         (* Note(superbobry): fold an assorted list of meta fields into
            three categories -- make targets, configure flags and patches;

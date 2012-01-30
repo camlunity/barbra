@@ -2,6 +2,8 @@
   open Common
   open Types
 
+  module List = ListLabels
+
   let guess_archive s ~succ ~fail =
     let ext = Filename.check_suffix s in
     if ext ".tar.gz" then
@@ -12,9 +14,17 @@
       succ `Tar
     else
       fail ()
+
+  and split = List.fold_left 
+    ~init:([], [])
+    ~f:(fun (deps, incs) stmt -> match stmt with
+      | `Dep dep -> (dep :: deps, incs)
+      | `Include inc -> (deps, inc :: incs)
+    )
 %}
 
 %token VERSION
+%token INCLUDE
 %token DEP
 %token MAKE
 %token FLAG
@@ -24,12 +34,14 @@
 %token <string> VALUE
 
 %start main
-%type <(Ast.ast_version * Ast.ast_dep list)> main
+%type <(Ast.version * Ast.dep list * Ast.inc list)> main
 
 %%
 
 main:
-  | VERSION IDENT stmt_list EOF {($2, List.rev $3)}
+  | VERSION IDENT stmt_list EOF {
+    let (deps, incs) = split $3 in ($2, deps, incs)
+  }
 ;
 
 meta_list:
@@ -38,9 +50,9 @@ meta_list:
 ;
 
 meta:
-  | MAKE VALUE  {`Make $2}
-  | FLAG VALUE  {`Flag $2}
-  | PATCH VALUE {`Patch $2}
+  | MAKE VALUE     {`Make $2}
+  | FLAG VALUE     {`Flag $2}
+  | PATCH VALUE    {`Patch $2}
 ;
 
 stmt_list:
@@ -49,6 +61,7 @@ stmt_list:
 ;
 
 stmt:
+  | INCLUDE VALUE meta_list {`Include $2}
   | DEP IDENT IDENT VALUE meta_list {
     let package = match String.lowercase $3 with
       | "remote" ->
@@ -78,7 +91,7 @@ stmt:
         VCS (vcs_type_of_string $3, $4)
       | _ -> Log.error "unsupported package type: %S\n" $3
     in
-    ($2, package, $5)
+    `Dep ($2, package, $5)
   }
   | IDENT {Log.error "brb.conf: invalid keyword %S" $1}
 ;
