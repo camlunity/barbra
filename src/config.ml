@@ -10,7 +10,7 @@ let check_dupes deps =
   let sorted = List.sort deps
     ~cmp:(fun { name = name1; _ } { name = name2; _ } ->
       String.compare name1 name2)
-  in  match sorted with
+  in match sorted with
     | [] -> ()
     | { name; _ } :: t ->
       ignore & List.fold_left t

@@ -45,11 +45,14 @@ class repository ~name ~path = object
     try
       let stat = Unix.stat path in
       if stat.Unix.st_kind <> Unix.S_DIR then
-        Log.error "Recipe repository %S at %s is not a directory"
+        Log.error "Recipe repository %S at %S is not a directory"
           name path
     with
-      | Unix.Unix_error _ ->
-        Log.error "Recipe repository %S at %s is not readable"
+      | Unix.Unix_error (Unix.ENOENT, _, _) ->
+        Log.error "Recipe repository %S at %S doesn't exist" name path
+      | Unix.Unix_error (Unix.EPERM, _, _)  ->
+        Log.error
+          "Recipe repository %S at %S is not readable; check permissions?"
           name path
 end
 
@@ -72,6 +75,6 @@ class world ~repositories = object
         Log.error "Recipe %S in repository %S has invalid syntax"
           recipe repository
       | Recipe_not_found (_, path) ->
-        Log.error "Recipe %S not found in repository %S at %s"
+        Log.error "Recipe %S not found in repository %S at %S"
           recipe repository path
 end
