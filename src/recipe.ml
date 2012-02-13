@@ -15,6 +15,12 @@ class repository ~name ~path = object
       ~init:StringSet.empty
       ~f:StringSet.add)
 
+  val name = name
+  val path = if Filename.is_relative path then
+      Global.base_dir </> path
+    else
+      path
+
   method resolve ~recipe =
     let recipes  = Lazy.force recipes in
     let abs_path = path </> recipe in
