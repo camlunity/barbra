@@ -3,11 +3,9 @@
 %}
 
 %token VERSION
-%token REPOSITORY
-%token DEP
-%token MAKE
-%token FLAG
-%token PATCH
+%token REPOSITORY DEP
+%token MAKE FLAG PATCH REQUIRES
+%token COMMA
 %token EOF
 %token <string> IDENT
 %token <string> VALUE
@@ -42,9 +40,15 @@ meta_list:
 ;
 
 meta:
-  | MAKE VALUE     {`Make $2}
-  | FLAG VALUE     {`Flag $2}
-  | PATCH VALUE    {`Patch $2}
+  | MAKE VALUE        {`Make $2}
+  | FLAG VALUE        {`Flag $2}
+  | PATCH VALUE       {`Patch $2}
+  | REQUIRES req_list {`Requires $2}
+;
+
+req_list:
+  | req_list COMMA IDENT {$3 :: $1}
+  | IDENT                {[$1]}
 ;
 
 stmt_list:

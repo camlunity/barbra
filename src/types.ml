@@ -13,12 +13,15 @@ type package =
   | Temporary of local_type * string
   | Installed
 
-type dep = { name    : string
-           ; package : package
-           ; targets : string list
-           ; flags   : string list
-           ; patches : string list
-           }
+type dep =
+    {
+      name     : string;
+      package  : package;
+      requires : string list;
+      targets  : string list;
+      flags    : string list;
+      patches : string list
+    }
 
 let vcs_type_of_string s = match String.lowercase s with
   | "git"   -> Git

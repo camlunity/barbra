@@ -6,7 +6,8 @@ open Types
 
 type meta = [ `Make of string
             | `Flag of string
-            | `Patch of string ]
+            | `Patch of string
+            | `Requires of string list ]
 
 type dep = (string * string * string * meta list)
 type repository = (string * string)
@@ -66,18 +67,19 @@ let to_dep ((name, _source, _location, metas) as ast) =
   (* Note(superbobry): fold an assorted list of meta fields into
      three categories -- make targets, configure flags and patches;
      the order is preserved. *)
-  let (targets, flags, patches) = List.fold_left metas
-    ~init:([], [], [])
-    ~f:(fun (ts, fs, ps) meta -> match meta with
-      | `Make t  -> (t :: ts, fs, ps)
+  let (targets, flags, patches, requires) = List.fold_left metas
+    ~init:([], [], [], [])
+    ~f:(fun (ts, fs, ps, rs) meta -> match meta with
+      | `Make t  -> (t :: ts, fs, ps, rs)
       | `Flag f  ->
-        (ts, (String.nsplit f " ") @ fs, ps)
-      | `Patch p -> (ts, fs, p :: ps)
+        (ts, (String.nsplit f " ") @ fs, ps, rs)
+      | `Patch p -> (ts, fs, p :: ps, rs)
+      | `Requires r -> (ts, fs, ps, rs @ r)
     )
   in
 
   {
     name;
     package = to_package ast;
-    targets; flags; patches;
+    requires; targets; flags; patches;
   }

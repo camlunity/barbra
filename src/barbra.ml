@@ -23,16 +23,15 @@ let cleanup () =
 let build_deps () =
   let rec go = function
     | [] -> Log.info "Dependencies built successfully!"
-    | ({ name; package; flags; targets; patches } as entry) :: conf ->
+    | ({ name; package; flags; targets; patches; _ } as dep) :: conf ->
       let go_temp_dir project_path =
-        go & { entry with package = Temporary (`Directory, project_path) }
+        go & { dep with package = Temporary (`Directory, project_path) }
           :: conf
       in begin match package with
-        | Recipe _name -> ()
         | Remote (remote_type, url) ->
           let source = new Source.remote url in
           let project_path = Res.exn_res & source#fetch ~dest_dir:tmp_dir
-          in go & { entry with package =
+          in go & { dep with package =
               Temporary ((remote_type :> local_type), project_path) }
             :: conf
         | Local ((#remote_type as archive_type), local_path) ->
@@ -78,11 +77,11 @@ let build_deps () =
           in
 
           Log.info "Removing successfully built %S" project_path;
-          (* kakadu recommends to allow user to decide: remove bundled
-             temporary files or not. *)
+          (* Note(gds): Kakadu recommends to allow user to decide:
+             remove bundled temporary files or not. *)
           let () = Fs_util.remove_directory_recursive project_path in
-          go & { entry with package = Installed } :: conf
-        | Installed ->
+          go & { dep with package = Installed } :: conf
+        | Installed | Recipe _ ->
           go conf
       end
   in with_config go
