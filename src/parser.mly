@@ -1,30 +1,9 @@
 %{
-  open Common
-  open Types
-
-  module List = ListLabels
-
-  let guess_archive s ~succ ~fail =
-    let ext = Filename.check_suffix s in
-    if ext ".tar.gz" then
-      succ `TarGz
-    else if ext ".tar.bz2" then
-      succ `TarBzip2
-    else if ext ".tar" then
-      succ `Tar
-    else
-      fail ()
-
-  and split = List.fold_left 
-    ~init:([], [])
-    ~f:(fun (deps, incs) stmt -> match stmt with
-      | `Dep dep -> (dep :: deps, incs)
-      | `Include inc -> (deps, inc :: incs)
-    )
+  open StdLabels
 %}
 
 %token VERSION
-%token INCLUDE
+%token REPOSITORY
 %token DEP
 %token MAKE
 %token FLAG
@@ -33,15 +12,28 @@
 %token <string> IDENT
 %token <string> VALUE
 
-%start main
-%type <(Ast.version * Ast.dep list * Ast.inc list)> main
+%start config recipe
+%type <Ast.ctxt> config
+%type <Ast.dep> recipe
 
 %%
 
-main:
+config:
   | VERSION IDENT stmt_list EOF {
-    let (deps, incs) = split $3 in ($2, deps, incs)
+    let open Ast in
+    List.fold_left $3
+    ~init:({ version = $2; deps = []; repositories = []})
+    ~f:(fun ({ repositories; deps; _ } as ctxt) stmt ->
+      match stmt with
+        | `Repository r -> { ctxt with repositories = r :: repositories }
+        | `Dep d -> { ctxt with deps = d :: deps }
+    )
   }
+;
+
+recipe:
+  | DEP IDENT IDENT VALUE meta_list {($2, $3, $4, $5)}
+  | IDENT {Log.error "recipe: invalid keyword %S" $1}
 ;
 
 meta_list:
@@ -61,38 +53,8 @@ stmt_list:
 ;
 
 stmt:
-  | INCLUDE VALUE meta_list {`Include $2}
-  | DEP IDENT IDENT VALUE meta_list {
-    let package = match String.lowercase $3 with
-      | "remote" ->
-        guess_archive $4
-          ~succ:(fun x -> Remote (x, $4))
-          ~fail:(fun () -> Log.error "can't guess remote archive format: %S\n" $3)
-      | "remote-tar-gz"  -> Remote (`TarGz, $4)
-      | "remote-tar-bz2" -> Remote (`TarBzip2, $4)
-      | "remote-tar"     -> Remote (`Tar, $4)
-      | "local" ->
-        guess_archive $4
-          ~succ:(fun x -> Local (x, $4))
-          ~fail:(fun () -> Log.error "can't guess local archive format: %S\n" $3)
-      | "local-tar-gz" -> Local (`TarGz, $4)
-      | "local-tar-bz2" -> Local (`TarBzip2, $4)
-      | "local-tar" -> Local (`Tar, $4)
-      | "local-dir" -> Local (`Directory, $4)
-      | "bundled-dir" -> Bundled (`Directory, $4)
-      | "bundled" ->
-        guess_archive $4
-          ~succ:(fun x -> Bundled (x,$4))
-          ~fail:(fun () -> Log.error "can't guess bundle's archive format: %S\n" $3)
-      | "bundled-tar" -> Bundled (`Tar, $4)
-      | "bundled-tar-gz" -> Bundled (`TarGz, $4)
-      | "bundled-tar-bz2" -> Bundled (`TarBzip2, $4)
-      | "svn" | "csv" | "hg" | "git" | "bzr" | "darcs" ->
-        VCS (vcs_type_of_string $3, $4)
-      | _ -> Log.error "unsupported package type: %S\n" $3
-    in
-    `Dep ($2, package, $5)
-  }
+  | REPOSITORY IDENT VALUE {`Repository ($2, $3)}
+  | DEP IDENT IDENT VALUE meta_list {`Dep ($2, $3, $4, $5)}
   | IDENT {Log.error "brb.conf: invalid keyword %S" $1}
 ;
 

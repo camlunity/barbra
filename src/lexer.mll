@@ -7,7 +7,7 @@
     ("make", MAKE);
     ("flag", FLAG);
     ("patch", PATCH);
-    ("include", INCLUDE);
+    ("repository", REPOSITORY);
     ("version", VERSION)
   ]
 }

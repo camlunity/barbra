@@ -5,6 +5,7 @@ type local_type  = [ remote_type | `Directory ]
 type vcs_type = Git | Hg | Bzr | Darcs | SVN | CVS
 
 type package =
+  | Recipe of string
   | Remote of remote_type * string
   | Local of local_type * string
   | VCS of vcs_type * string

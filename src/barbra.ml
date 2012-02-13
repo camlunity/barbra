@@ -28,6 +28,7 @@ let build_deps () =
         go & { entry with package = Temporary (`Directory, project_path) }
           :: conf
       in begin match package with
+        | Recipe _name -> ()
         | Remote (remote_type, url) ->
           let source = new Source.remote url in
           let project_path = Res.exn_res & source#fetch ~dest_dir:tmp_dir
