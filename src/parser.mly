@@ -53,7 +53,7 @@ stmt_list:
 ;
 
 stmt:
-  | REPOSITORY IDENT VALUE {`Repository ($2, $3)}
+  | REPOSITORY VALUE VALUE {`Repository ($2, $3)}
   | DEP IDENT IDENT VALUE meta_list {`Dep ($2, $3, $4, $5)}
   | IDENT {Log.error "brb.conf: invalid keyword %S" $1}
 ;
