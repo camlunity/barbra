@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b4b47f97665860b40204c9b4cd32f68a)
+# DO NOT EDIT (digest: 2b495baa20774c265ff5ca2e8321055a)
 Barbra
 Config
 Source
@@ -14,4 +14,6 @@ Env
 Subcommand
 ArgExt
 FormatExt
+Recipe
+Graph
 # OASIS_STOP
