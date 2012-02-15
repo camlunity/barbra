@@ -1,16 +1,26 @@
 (** Minimal unweighted directed graphs implementation. *)
 
-type 'key graph = ('key, 'key list) Hashtbl.t
+module type OrderedType = sig
+  type t
+  val compare : t -> t -> int
+end
 
-val make : f:('node -> ('key * 'key list)) -> 'node list -> 'key graph
-(** [make ~f nodes] created a graph from a key function [f] and
-  a list of [nodes]. *)
 
-val dfs : f:('key -> unit) -> 'key graph -> ('key list * 'key list)
-(** [dfs ~f graph] performs a depth-first search on the graph,
-  applying [f] to each vertes. Returns a pair, where the first
-  element is a list of graph vertices in the pre-order, and second
-  is a list of vertices in the post-order. *)
+module Make(Ord : OrderedType) : sig
+  type graph
 
-val topsort : 'key graph -> 'key list
-(** [topsort graph] return a topological ordering of the graph. *)
+  type vertex = Ord.t
+  type edge   = (vertex * vertex)
+
+  exception Cycle_found of vertex list
+
+  val make : f:('node -> (vertex * vertex list)) -> 'node list -> graph
+  (** [make ~f nodes] created a graph from a vertex function [f] and
+      a list of [nodes]. *)
+
+  val vertices : graph -> vertex list
+  val edges    : graph -> edge list
+
+  val topsort  : graph -> vertex list
+  (** [topsort graph] return a topological ordering of the graph. *)
+end
