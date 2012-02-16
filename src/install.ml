@@ -15,11 +15,12 @@ let makefile : install_type = object
     Env.write_env ();
 
     Log.info "Applying patches";
-    List.iter patches ~f:(fun p -> 
+    WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
+      List.iter patches ~f:(fun p ->
         let abs_p = G.base_dir </> p in
         exec_exn ["patch"; "-p1"; "-i"; abs_p];
         Log.debug "Applied patch %S" p;
-    );
+      );
 
     Log.info "Starting Makefile build";
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
