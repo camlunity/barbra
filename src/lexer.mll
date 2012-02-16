@@ -20,8 +20,9 @@ rule token = parse
   | ","            {COMMA}
   | eof            {EOF}
   | ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']+ as lxm {
+    let lxm = String.lowercase lxm in
     try
-      Hashtbl.find keywords (String.lowercase lxm)
+      Hashtbl.find keywords lxm
     with Not_found -> IDENT(lxm)
   }
   | '"' ([^'"']+ as lxm) '"' {VALUE(lxm)}
