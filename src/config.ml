@@ -4,23 +4,37 @@ open StdLabels
 open Common
 open Types
 
-module G = Global
+module Graph = Graph.Make(String)
 
-let check_dupes deps =
-  let sorted = List.sort deps
-    ~cmp:(fun { name = name1; _ } { name = name2; _ } ->
-      String.compare name1 name2)
-  in match sorted with
-    | [] -> ()
-    | { name; _ } :: t ->
-      ignore & List.fold_left t
-        ~init:name
-        ~f:(fun name { name = name'; _ } ->
-          if name = name' then
-            Log.error "Duplicate dependency %S in %S" name G.brb_conf
-          else
-            name'
-        )
+let rec resolve_requirements world known =
+  let missing = ref false in
+  Hashtbl.iter (fun _ { requires; _ } ->
+    List.iter requires ~f:(fun name ->
+      missing := not (Hashtbl.mem known name);
+      if !missing then
+        Hashtbl.add known name (world#resolve_any ~recipe:name)
+    )
+  ) known;
+
+  if !missing then
+    resolve_requirements world known
+  else
+    known
+
+let resolve_build_order known =
+  let g = Graph.make (Hashtbl.values known)
+    ~f:(fun { name; requires; _ } -> (name, requires))
+  in
+
+  let build_order =
+    try
+      Graph.(topsort (transpose g))
+    with Graph.Cycle_found _cycle ->
+      Log.error "Cannot resolve cyclic dependencies!"
+  in
+
+  Log.info "Build order: %s" (String.concat ", " build_order);
+  List.map ~f:(Hashtbl.find known) build_order
 
 let rec from_file path =
   let ic = open_in path in
@@ -36,9 +50,9 @@ and from_string s =
 
 and from_lexbuf lexbuf =
   match Parser.config Lexer.token lexbuf with
-    | { Ast.version; _ } when version <> G.version ->
+    | { Ast.version; _ } when version <> Global.version ->
       Log.error "Unsupported %S version %S, try %S?"
-        G.brb_conf
+        Global.brb_conf
         version
         Global.version
     | { Ast.deps; Ast.repositories; _ } ->
@@ -59,7 +73,15 @@ and from_lexbuf lexbuf =
                 | Bundled _ | VCS _   | Installed) -> dep
       ) in
 
-      begin
-        check_dupes deps;
-        deps
-      end
+      let known = Hashtbl.create (List.length deps) in
+      List.iter deps
+        ~f:(fun ({ name; _ } as dep) ->
+          if Hashtbl.mem known name then
+            Log.error "Duplicate dependency %S in %S" name Global.brb_conf
+          else
+            Hashtbl.add known name dep;
+        );
+
+      known
+      |> resolve_requirements world
+      |> resolve_build_order

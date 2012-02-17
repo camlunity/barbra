@@ -1,6 +1,7 @@
 (** Minimal unweighted directed graphs implementation. *)
 
 open StdLabels
+open Common
 
 module type OrderedType = sig
   type t
@@ -29,17 +30,25 @@ module Make(Ord : OrderedType) = struct
         Hashtbl.replace g v adjacent;
 
         (* Make sure we don't have any 'hanging' vertices. *)
-        List.iter adjacent ~f:(fun v ->
-          if not (Hashtbl.mem g v) then
-            Hashtbl.add g v []
-        )
+        List.iter adjacent ~f:(fun v -> Hashtbl.ensure g v [])
       );
 
       g
     end
 
-  and vertices g =
-    Hashtbl.fold (fun v _ acc -> v :: acc) g []
+  and transpose g =
+    let g' = Hashtbl.create (Hashtbl.length g) in
+    Hashtbl.iter (fun v1 ->
+      List.iter ~f:(fun v2 ->
+        let vs = try Hashtbl.find g' v2 with Not_found -> [] in
+        Hashtbl.replace g' v2 (v1 :: vs);
+        Hashtbl.ensure  g' v1 []
+      )
+    ) g;
+
+    g'
+
+  and vertices = Hashtbl.keys
 
   and edges g =
     Hashtbl.fold (fun v1 adjacent acc ->
@@ -69,23 +78,23 @@ module Make(Ord : OrderedType) = struct
     let seen = Hashtbl.create size in
     let parents = Hashtbl.create size in
 
-    let rec visit v1 =
-      Hashtbl.replace seen v1 Gray;
-      pre := v1 :: !pre;
+    let rec visit v1 v2 = match Hashtbl.find seen v2 with
+      | White ->
+        pre := v2 :: !pre;
+        Hashtbl.replace seen v2 Gray;
 
-      List.iter ~f:(fun v2 ->
-        match Hashtbl.find seen v2 with
-          | White -> Hashtbl.add parents v2 v1; visit v2
-          | Gray  ->
-            raise (Cycle_found (resolve_cycle v1 v2 parents))
-          | Black -> ()
-      ) (Hashtbl.find g v1);
+        if v1 <> v2 then
+          Hashtbl.add parents v2 v1;
 
-      Hashtbl.replace seen v1 Black;
-      post := v1 :: !post
+        List.iter ~f:(visit v2) (Hashtbl.find g v2);
+
+        Hashtbl.replace seen v2 Black;
+        post := v2 :: !post
+      | Gray  -> raise (Cycle_found (resolve_cycle v1 v2 parents))
+      | Black -> ()
     in begin
       Hashtbl.iter (fun v _ -> Hashtbl.add seen v White) g;
-      List.iter ~f:visit vs;
+      List.iter ~f:(fun v -> visit v v) vs;
       (!pre, !post)
     end
 end

@@ -1,0 +1,2 @@
+Dep odn remote "http://forge.ocamlcore.org/frs/download.php/739/ocaml-data-notation-0.0.7.tar.gz"
+    Requires type-conv, fileutils, oUnit

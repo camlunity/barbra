@@ -4,6 +4,20 @@ include Cd_Ops
 module StringSet = Set.Make(String)
 module StringMap = Map.Make(String)
 
+module Hashtbl = struct
+  include Hashtbl
+
+  let keys tbl =
+    Hashtbl.fold (fun k _ acc -> k :: acc) tbl []
+
+  let values tbl =
+    Hashtbl.fold (fun _ v acc -> v :: acc) tbl []
+
+  let ensure tbl key default =
+    if not (mem tbl key) then
+      add tbl key default
+end
+
 let failwithf fmt = Printf.ksprintf failwith fmt
 
 let (</>) = Filename.concat

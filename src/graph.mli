@@ -18,6 +18,8 @@ module Make(Ord : OrderedType) : sig
   (** [make ~f nodes] created a graph from a vertex function [f] and
       a list of [nodes]. *)
 
+  val transpose : graph -> graph
+
   val vertices : graph -> vertex list
   val edges    : graph -> edge list
 

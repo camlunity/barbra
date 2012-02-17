@@ -83,4 +83,21 @@ class world ~repositories = object
       | Recipe_not_found (_, path) ->
         Log.error "Recipe %S not found in repository %S at %S"
           recipe repository path
+
+  method resolve_any ~recipe =
+    let dep_ref = ref None in
+    StringMap.iter (fun repository r ->
+      try
+        dep_ref := Some (r#resolve ~recipe)
+      with
+        | Recipe_invalid _ ->
+          Log.error "Recipe %S in repository %S has invalid syntax"
+            recipe repository
+        | Not_found | Recipe_not_found _ -> ()
+    ) repositories;
+
+    match !dep_ref with
+      | Some dep -> dep
+      | None ->
+        Log.error "Recipe %S not found" recipe
 end

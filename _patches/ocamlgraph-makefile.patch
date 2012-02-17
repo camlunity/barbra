@@ -1,0 +1,21 @@
+--- old-ocamlgraph/Makefile.in	2011-10-17 18:27:03.000000000 +0400
++++ new-ocamlgraph/Makefile.in	2012-02-16 22:14:54.186501062 +0400
+@@ -303,17 +303,7 @@
+ 
+ INSTALL_LIBDIR=$(DESTDIR)$(OCAMLLIB)/ocamlgraph
+ 
+-install: install-$(OCAMLBEST) install-byte
+-	mkdir -p $(BINDIR)
+-ifeq (@LABLGNOMECANVAS@,yes)
+-ifeq ($(OCAMLBEST),byte)
+-	cp -f $(BINDIR)/graph-editor.byte $(BINDIR)/graph-editor$(EXE)
+-	cp -f $(BINDIR)/graph-viewer.byte $(BINDIR)/graph-viewer$(EXE)
+-else
+-	cp -f $(BINDIR)/graph-editor.opt $(BINDIR)/graph-editor$(EXE)
+-	cp -f $(BINDIR)/graph-viewer.opt $(BINDIR)/graph-viewer$(EXE)
+-endif
+-endif
++install: install-findlib
+ 
+ install-byte:
+ 	mkdir -p $(INSTALL_LIBDIR)

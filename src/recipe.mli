@@ -18,4 +18,8 @@ class world : repositories:(string * string) list -> object
   method resolve : repository:string -> recipe:string -> dep
   (** [resolve ~repository ~recipe] Resolves a [recipe] in a repository
       with a given [name]. *)
+
+  method resolve_any : recipe:string -> dep
+  (** [resolve_any ~recipe] Tries to resolve a [recipe] in all known
+      repositories and return the first match found. *)
 end
