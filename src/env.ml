@@ -59,9 +59,9 @@ let withres_env =
 
 let do_write_env fn =
   Filew.with_file_out_bin fn & fun outch ->
-  List.iter
-    (let set n v = fprintf outch "export %s=\"%s\"\n" n v in
-     function
+  List.iter ~f:(
+   let set n v = fprintf outch "export %s=\"%s\"\n" n v in
+   function
      | (`Set, n, v) -> set n v
      | (`Prepend, n, v) ->
          ( fprintf outch "test -z \"$%s\" || %s=\":$%s\"\n" n n n

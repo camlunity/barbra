@@ -30,7 +30,8 @@ module Make(Ord : OrderedType) = struct
         Hashtbl.replace g v adjacent;
 
         (* Make sure we don't have any 'hanging' vertices. *)
-        List.iter adjacent ~f:(fun v -> Hashtbl.ensure g v [])
+        List.iter adjacent ~f:(fun v ->
+          Hashtbl.replace g v (Hashtbl.find_default g v []))
       );
 
       g
@@ -42,13 +43,13 @@ module Make(Ord : OrderedType) = struct
       List.iter ~f:(fun v2 ->
         let vs = try Hashtbl.find g' v2 with Not_found -> [] in
         Hashtbl.replace g' v2 (v1 :: vs);
-        Hashtbl.ensure  g' v1 []
+        Hashtbl.replace g' v1 (Hashtbl.find_default g' v1 [])
       )
     ) g;
 
     g'
 
-  and vertices = Hashtbl.keys
+  and vertices g = List.of_enum (Hashtbl.keys g)
 
   and edges g =
     Hashtbl.fold (fun v1 adjacent acc ->

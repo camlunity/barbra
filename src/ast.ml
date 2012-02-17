@@ -1,6 +1,5 @@
 (** AST types and helpers. *)
 
-open StdLabels
 open Common
 open Types
 

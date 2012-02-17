@@ -1,6 +1,4 @@
 
-open StdLabels
-
 open Common
 open Types
 
@@ -22,7 +20,7 @@ let rec resolve_requirements world known =
     known
 
 let resolve_build_order known =
-  let g = Graph.make (Hashtbl.values known)
+  let g = Graph.make (List.of_enum (Hashtbl.values known))
     ~f:(fun { name; requires; _ } -> (name, requires))
   in
 
