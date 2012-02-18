@@ -26,7 +26,7 @@ to create `brb.conf`. Here's an example of a simple `brb.conf`
 file:
 
 ```conf
-Version 0.2
+Version "0.2"
 
 Dep lwt remote "http://ocsigen.org/download/lwt-2.3.2.tar.gz"
     Flag "--disable-extra"
@@ -35,10 +35,10 @@ Dep lwt remote "http://ocsigen.org/download/lwt-2.3.2.tar.gz"
 ```
 
 * The first non-empty line should **always** be version spec, which
-  tells `barbra` that this config is up to date with `Version 0.2`
+  tells `barbra` that this config is up to date with `Version "0.2"`
   syntax.
 * All config keywords are case insensitive, so we could as well use
-  `versiOn 0.2` for the first line.
+  `versiOn "0.2"` for the first line.
 * Each dependency starts with a `Dep` block, which takes three
   arguments:
   * package name: *lwt* (in the example above)

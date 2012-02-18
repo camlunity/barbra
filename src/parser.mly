@@ -17,7 +17,7 @@
 %%
 
 config:
-  | VERSION IDENT stmt_list EOF {
+  | VERSION VALUE stmt_list EOF {
     let open Ast in
     List.fold_left $3
     ~init:({ version = $2; deps = []; repositories = []})
