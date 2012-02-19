@@ -21,9 +21,9 @@ type ctxt =
 
 let guess_archive s ~succ ~fail =
   let ext = Filename.check_suffix s in
-  if ext ".tar.gz" then
+  if ext ".tar.gz" || ext ".tgz" then
     succ `TarGz
-  else if ext ".tar.bz2" then
+  else if ext ".tar.bz2" || ext ".tbz" then
     succ `TarBzip2
   else if ext ".tar" then
     succ `Tar
