@@ -7,6 +7,7 @@
     ("make", MAKE);
     ("flag", FLAG);
     ("patch", PATCH);
+    ("install", INSTALL);
     ("requires", REQUIRES);
     ("repository", REPOSITORY);
     ("version", VERSION)

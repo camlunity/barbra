@@ -20,7 +20,8 @@ type dep =
       requires : string list;
       targets  : string list;
       flags    : string list;
-      patches : string list
+      patches  : string list;
+      installcmd : string
     }
 
 let vcs_type_of_string s = match String.lowercase s with

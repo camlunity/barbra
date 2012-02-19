@@ -4,7 +4,7 @@
 
 %token VERSION
 %token REPOSITORY DEP
-%token MAKE FLAG PATCH REQUIRES
+%token MAKE FLAG PATCH REQUIRES INSTALL
 %token COMMA
 %token EOF
 %token <string> IDENT
@@ -43,6 +43,7 @@ meta:
   | MAKE VALUE        {`Make $2}
   | FLAG VALUE        {`Flag $2}
   | PATCH VALUE       {`Patch $2}
+  | INSTALL VALUE     {`Install $2}
   | REQUIRES req_list {`Requires $2}
 ;
 
