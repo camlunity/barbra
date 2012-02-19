@@ -40,10 +40,10 @@ module Make(Ord : OrderedType) = struct
   and transpose g =
     let g' = Hashtbl.create (Hashtbl.length g) in
     Hashtbl.iter (fun v1 ->
+      Hashtbl.replace g' v1 (Hashtbl.find_default g' v1 []);
       List.iter ~f:(fun v2 ->
-        let vs = try Hashtbl.find g' v2 with Not_found -> [] in
-        Hashtbl.replace g' v2 (v1 :: vs);
-        Hashtbl.replace g' v1 (Hashtbl.find_default g' v1 [])
+        let vs = Hashtbl.find_default g' v2 [] in
+        Hashtbl.replace g' v2 (v1 :: vs)
       )
     ) g;
 
