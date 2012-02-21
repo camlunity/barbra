@@ -4,8 +4,7 @@
   let keywords = Hashtbl.create 9
   let () = List.iter (fun (kwd, token) -> Hashtbl.add keywords kwd token) [
     ("dep",  DEP);
-    ("make", MAKE);
-    ("buildcmd", BUILDCMD);
+    ("build", BUILD);
     ("flag", FLAG);
     ("patch", PATCH);
     ("install", INSTALL);
