@@ -10,7 +10,7 @@ let (>>=) = Res.(>>=)
 
 
 let makefile : install_type = object
-  method install ~source_dir ~flags ~targets ~patches = begin
+  method install ~source_dir ~flags ~targets ~patches ~installcmd = begin
     G.create_dirs ();
     Env.write_env ();
 
@@ -40,9 +40,17 @@ let makefile : install_type = object
             else
               exec (["sh" ; "./configure"] @ flags)
          else
-            Res.return ()) >>= fun () ->
+            Res.return ()
+        ) >>= fun () ->
         let make = getenv ~default:"make" "MAKE" in
         exec (make :: targets) >>= fun () ->
-        exec [make; "install"]
+        let (cmd,args) =
+          try
+            let (i,l) = String.index installcmd ' ', String.length installcmd in
+            (String.sub installcmd 0 i, String.sub installcmd (i+1) (l-i-1) )
+          with
+            | Not_found -> (installcmd,"") in
+        let cmd = if cmd = "make" then make else cmd in
+        exec [cmd; args]
   end
 end

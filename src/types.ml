@@ -60,7 +60,8 @@ class type install_type = object
   method install : source_dir:string ->
                    flags:string list ->
                    targets:string list ->
-                   patches:string list -> (unit, exn) res
+                   patches:string list ->
+                   installcmd:string -> (unit, exn) res
   (** Installs packages, located in [source_dir]. *)
 end
 

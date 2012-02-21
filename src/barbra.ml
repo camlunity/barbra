@@ -74,6 +74,7 @@ let build_deps () =
             ~flags
             ~targets
             ~patches
+            ~installcmd: dep.installcmd
           in
 
           Log.info "Removing successfully built %S" project_path;
@@ -93,6 +94,7 @@ let build_project () = begin
     ~source_dir:base_dir
     ~flags:[]
     ~targets:[]
+    ~installcmd:"make install"
     ~patches:[];
   Log.info "Project built succesfully!"
 end
