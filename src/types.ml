@@ -18,9 +18,10 @@ type dep =
       name     : string;
       package  : package;
       requires : string list;
-      targets  : string list;
+      targets  : string list; (* targets for buildcmd *)
       flags    : string list;
       patches  : string list;
+      buildcmd : string;
       installcmd : string
     }
 
@@ -61,6 +62,7 @@ class type install_type = object
                    flags:string list ->
                    targets:string list ->
                    patches:string list ->
+                   buildcmd:string ->
                    installcmd:string -> (unit, exn) res
   (** Installs packages, located in [source_dir]. *)
 end

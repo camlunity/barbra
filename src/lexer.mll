@@ -1,10 +1,11 @@
 {
   open Parser
 
-  let keywords = Hashtbl.create 8
+  let keywords = Hashtbl.create 9
   let () = List.iter (fun (kwd, token) -> Hashtbl.add keywords kwd token) [
     ("dep",  DEP);
     ("make", MAKE);
+    ("buildcmd", BUILDCMD);
     ("flag", FLAG);
     ("patch", PATCH);
     ("install", INSTALL);

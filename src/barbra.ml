@@ -74,6 +74,7 @@ let build_deps () =
             ~flags
             ~targets
             ~patches
+            ~buildcmd: dep.buildcmd
             ~installcmd: dep.installcmd
           in
 
@@ -95,6 +96,7 @@ let build_project () = begin
     ~flags:[]
     ~targets:[]
     ~installcmd:"make install"
+    ~buildcmd:"make"
     ~patches:[];
   Log.info "Project built succesfully!"
 end

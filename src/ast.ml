@@ -7,6 +7,7 @@ type meta = [ `Make of string
             | `Flag of string
             | `Patch of string
             | `Install of string
+            | `BuildCmd of string
             | `Requires of string list ]
 
 type dep = (string * string * string * meta list)
@@ -67,20 +68,20 @@ let to_dep ((name, _source, _location, metas) as ast) =
   (* Note(superbobry): fold an assorted list of meta fields into
      three categories -- make targets, configure flags and patches;
      the order is preserved. *)
-  let (targets, flags, patches, installcmd, requires) = List.fold_left metas
-    ~init:([], [], [], "make install", [])
-    ~f:(fun (ts, fs, ps, ins, rs) meta -> match meta with
-      | `Make t  -> (t :: ts, fs, ps, ins, rs)
+  let (buildcmd, targets, flags, patches, installcmd, requires) = List.fold_left metas
+    ~init:("make", [], [], [], "make install", [])
+    ~f:(fun (bc, ts, fs, ps, ins, rs) meta -> match meta with
+      | `BuildCmd x -> (x, ts, fs, ps, ins, rs)
+      | `Make t  -> (bc, t::ts, fs, ps, ins, rs)
       | `Flag f  ->
-        (ts, (String.nsplit f " ") @ fs, ps, ins, rs)
-      | `Patch p -> (ts, fs, p :: ps, ins, rs)
-      | `Requires r -> (ts, fs, ps, ins, rs @ r)
-      | `Install i  -> (ts, fs, ps, i, rs)
+        (bc, ts, (String.nsplit f " ") @ fs, ps, ins, rs)
+      | `Patch p -> (bc, ts, fs, p :: ps, ins, rs)
+      | `Requires r -> (bc, ts, fs, ps, ins, rs @ r)
+      | `Install i  -> (bc, ts, fs, ps, i, rs)
     )
   in
-
   {
     name;
     package = to_package ast;
-    requires; targets; flags; patches; installcmd
+    targets; requires; flags; patches; installcmd; buildcmd
   }
