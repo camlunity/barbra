@@ -8,9 +8,10 @@ let rec resolve_requirements world known =
   let missing = ref false in
   Hashtbl.iter (fun _ { requires; _ } ->
     List.iter requires ~f:(fun name ->
-      missing := not (Hashtbl.mem known name);
-      if !missing then
+      if not (Hashtbl.mem known name) then begin
+        missing := true;
         Hashtbl.add known name (world#resolve_any ~recipe:name)
+      end
     )
   ) known;
 
