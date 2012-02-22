@@ -17,6 +17,12 @@ let (</>) = Filename.concat
 let getenv ?(default="") env_name =
   try Unix.getenv env_name with Not_found -> default
 
+let expand_vars =
+  Str.global_substitute
+    (Str.regexp "\\$\\([A-Z_]+\\)")
+    (fun m ->
+      let var = Str.matched_group 1 m in
+      getenv var)
 
 module Subprocess = struct
   open UnixLabels

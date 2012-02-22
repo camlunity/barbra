@@ -1,7 +1,8 @@
 # OASIS_START
-# DO NOT EDIT (digest: ec4c12cb39186baf5e2fc56a372b6f68)
+# DO NOT EDIT (digest: 184b77fe24fd12b27695745dd6dcb4c2)
 version = "0.2"
 description = "Damn Simple Package Manager"
+requires = "str"
 archive(byte) = "barbra.cma"
 archive(native) = "barbra.cmxa"
 exists_if = "barbra.cma"
