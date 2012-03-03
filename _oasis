@@ -17,12 +17,14 @@ Flag tests
 Executable brb
   Path:       bin
   MainIs:     brb.ml
+  BuildDepends: str
   NativeOpt:  -w @a
   ByteOpt:    -w @a
 
 Library barbra
   Path:       src
   Modules:    Barbra
+  BuildDepends: str
   InternalModules: Config, Source, Install, Global, Types, Log, Syscaps,
                    Lexer, Parser, Env, Subcommand, ArgExt, FormatExt,
                    Recipe, Graph

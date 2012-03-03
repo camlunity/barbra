@@ -4,7 +4,7 @@
 
 %token VERSION
 %token REPOSITORY DEP
-%token MAKE FLAG PATCH REQUIRES INSTALL BUILDCMD
+%token MAKE FLAG PATCH REQUIRES INSTALL BUILD
 %token COMMA
 %token EOF
 %token <string> IDENT
@@ -40,8 +40,7 @@ meta_list:
 ;
 
 meta:
-  | MAKE VALUE        {`Make $2}
-  | BUILDCMD VALUE    {`BuildCmd $2}
+  | BUILD VALUE       {`Build $2}
   | FLAG VALUE        {`Flag $2}
   | PATCH VALUE       {`Patch $2}
   | INSTALL VALUE     {`Install $2}

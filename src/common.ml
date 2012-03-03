@@ -17,90 +17,69 @@ let (</>) = Filename.concat
 let getenv ?(default="") env_name =
   try Unix.getenv env_name with Not_found -> default
 
-let command_text_of_args args =
-  if args = []
-  then "<empty command>"
-  else String.concat " " args
+let expand_vars =
+  Str.global_substitute
+    (Str.regexp "\\$\\([A-Z_]+\\)")
+    (fun m ->
+      let var = Str.matched_group 1 m in
+      getenv var)
 
+module Subprocess = struct
+  open UnixLabels
 
-let nul_redirects = lazy begin
-   let module U = UnixLabels in
-   let opengen ~mode n = U.openfile n ~mode ~perm:0o777 in
-   let openout n = opengen n ~mode:[U.O_WRONLY] in
-   let openin n = opengen n ~mode:[U.O_RDONLY] in
-   let n = Filew.filename_NUL in
-   let nul_out = openout n in
-   (openin n, nul_out, nul_out, " (redirecting to " ^ n ^ ")")
-end
+  let command_text_of_args = function
+    | []   -> "<empty command>"
+    | args -> String.concat " " args
 
-let std_redirects = lazy (Unix.stdin, Unix.stdout, Unix.stderr, "")
+  let null_redirects = lazy begin
+    let null = Filew.filename_NUL in
+    let null_in  = openfile ~perm:0o777 ~mode:[O_RDONLY] null in
+    let null_out = openfile ~perm:0o777 ~mode:[O_WRONLY] null in
+    (null_in, null_out, null_out, " (redirecting to " ^ null ^ ")")
+  end
 
+  let std_redirects = lazy begin
+    (Unix.stdin, Unix.stdout, Unix.stderr, "")
+  end
 
-(** [exec_exitcode args] Executes a given command in a separate process;
-    a command is given a a list of arguments, for example:
-
-    let _ : (int, exn) Res.res = exec_exitcode ["sh"; "-c"; "./configure"];;
-
-    The returned value is the exit code of the process.
-*)
-let exec_exitcode ?(redirects=`Std) args = Res.catch_exn (fun () ->
-  let module U = UnixLabels in
-  match args with
+  let exec_exitcode ?(silent=false) = function
     | [] -> failwith "can't execute empty command!"
     | (prog :: _) as args ->
       let cmd = command_text_of_args args in
-      let (stdin, stdout, stderr, redir_msg) = Lazy.force &
-        match redirects with
-        (* Note(superbobry): command output is displayed only on
-           [`Info] level! *)
-        | `Std when !Log.verbosity = 2 -> std_redirects
-        | `Nul | _ -> nul_redirects
+      let (stdin, stdout, stderr, redirect_msg) =
+        Lazy.force & match (silent, !Log.verbosity) with
+          (* Note(superbobry): command output is displayed only on
+             [`Info] level! *)
+          | (false, 2) -> std_redirects
+          | (_, _) -> null_redirects
       in
 
-      let () = Log.info "Running command %S%s" cmd redir_msg in
-      (* ^^^ logging about future actions must be done before making them! *)
+      Log.info "Running command %S%s" cmd redirect_msg;
 
-      let () = Log.debug "Running command's argv: [%s], cwd=%S"
-        (String.concat " ; " &
-           List.map ~f:(Printf.sprintf "%S") args)
-        (Sys.getcwd ())
-      in
-
-      let pid = U.create_process
+      let pid = create_process
         ~prog
         ~args:(Array.of_list args)
-        ~stdin ~stdout ~stderr in
-      begin
-        match U.waitpid ~mode:[] pid with
-          | (pid', _) when pid' <> pid -> assert false
-          | (_, U.WEXITED code) ->
-            Res.return code
-          | (_, U.WSIGNALED signal) ->
-            Log.error "Command %S was killed by signal %i" cmd signal
-          | (_, U.WSTOPPED _) ->
-            assert false  (* we are not waiting for stopped processes *)
-      end
-)
+        ~stdin ~stdout ~stderr
+      in match waitpid ~mode:[] pid with
+        | (pid', _) when pid' <> pid -> assert false
+        | (_, WEXITED code) -> code
+        | (_, WSIGNALED signal) ->
+          Log.error "Command %S was killed by signal %i" cmd signal
+        | (_, WSTOPPED _) ->
+          assert false  (* we are not waiting for stopped processes *)
 
+  let exec args =
+    let cmd = command_text_of_args args in
+    match exec_exitcode args with
+      | 0 -> ()
+      | code when code = 127 ->
+        Log.error
+          "Command %S not found (terminated with exit code %i)" cmd code
+      | code ->
+        Log.error "Command %S terminated with exit code %i" cmd code
+end
 
-(** [exec args] Executes a given command in a separate process;
-    a command is given a a list of arguments, for example:
-
-    let _ : (unit, exn) Res.res = exec ["sh"; "-c"; "./configure"];;
-*)
-let exec args =
-  let (>>=) = Res.(>>=) in
-  exec_exitcode args >>= fun code ->
-  Res.catch_exn
-    (fun () ->
-       let cmd = command_text_of_args args in
-       match code with
-       | 0 -> Res.return ()
-       | 127 ->
-           Log.error "Command %S not found \
-             (terminated with exit code %i)" cmd code
-       | code ->
-           Log.error "Command %S terminated with exit code %i" cmd code
-    )
-
-let exec_exn cmd = Res.exn_res (exec cmd)
+let exec = Res.wrap1 Subprocess.exec
+let exec_exn = Subprocess.exec
+let exec_exitcode ?(silent=false) args =
+  Res.res_exn (fun () -> Subprocess.exec_exitcode ~silent args)

@@ -59,12 +59,13 @@ and from_lexbuf lexbuf =
       let deps  = List.map deps ~f:(fun ast ->
         let dep = Ast.to_dep ast in match dep.package with
           | Recipe location ->
-            let ({ targets; patches; flags; _ } as resolved) =
+            let ({ patches; flags; _ } as resolved) =
               world#resolve ~repository:location ~recipe:dep.name
             in
 
+            (* FIXME(superbobry): what if both 'recipe' and 'brb.conf'
+               have build or install commands? *)
             { resolved with
-              targets = targets @ dep.targets;
               patches = patches @ dep.patches;
               flags   = flags @ dep.flags
             }

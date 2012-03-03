@@ -15,14 +15,13 @@ type package =
 
 type dep =
     {
-      name     : string;
-      package  : package;
-      requires : string list;
-      targets  : string list; (* targets for buildcmd *)
-      flags    : string list;
-      patches  : string list;
-      buildcmd : string;
-      installcmd : string
+      name        : string;
+      package     : package;
+      requires    : string list;
+      flags       : string list;
+      patches     : string list;
+      build_cmd   : string;
+      install_cmd : string
     }
 
 let vcs_type_of_string s = match String.lowercase s with
@@ -59,11 +58,10 @@ end
 
 class type install_type = object
   method install : source_dir:string ->
+                   build_cmd:string ->
+                   install_cmd:string ->
                    flags:string list ->
-                   targets:string list ->
-                   patches:string list ->
-                   buildcmd:string ->
-                   installcmd:string -> (unit, exn) res
+                   patches:string list -> (unit, exn) res
   (** Installs packages, located in [source_dir]. *)
 end
 
