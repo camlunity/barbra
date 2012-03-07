@@ -18,11 +18,14 @@ let print_barbra () =
       with Not_found -> None in
     let to_barbra ch {id; props} = 
       let tarball = props |> List.find (fun (x,_) -> x="tarball") |> snd in
-      let () = fprintf ch "Dep %s remote %s%s/%s\n" id (List.hd webroots) !repository tarball in
+      let () = fprintf ch "\nDep %s remote \"%s%s/%s\"\n" id (List.hd webroots) !repository tarball in
+      let remove_version s = 
+        try  String.sub s 0 (String.index s '(')
+        with Not_found -> s in
       let () = match find_opt "deps" props with
         | None
         | Some "" -> ()
-        | Some x -> fprintf ch "\tRequires %s\n" x
+        | Some x -> fprintf ch "\tRequires %s\n" (remove_version x)
       in
       ()
     in
@@ -35,6 +38,7 @@ let print_barbra () =
         List.iter (printf " %s") (List.rev pkgs); *)
         let () = print_endline "Showing barbra info" in
         let ch = open_out "odb.recipes" in
+        Printf.fprintf ch "Version \"0.2\"\nRepository \"local\" \"_recipes\"\n";
         let () = List.iter (fun name -> to_barbra ch (to_pkg name)) (List.rev pkgs) in
         let () = close_out ch in
         print_newline ()
@@ -42,3 +46,16 @@ let print_barbra () =
     print_newline ()
 
 let () = print_barbra ()
+
+
+
+
+
+
+
+
+
+
+
+
+
