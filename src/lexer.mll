@@ -18,7 +18,7 @@ rule token = parse
   | [' ' '\t']     {token lexbuf}
   | '#' [^'\n']*   {token lexbuf}
   | '\n'           {Lexing.new_line lexbuf; token lexbuf}
-  | ","            {COMMA}
+  | ','            {COMMA}
   | eof            {EOF}
   | ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']+ as lxm {
     let lxm = String.lowercase lxm in

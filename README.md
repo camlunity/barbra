@@ -31,7 +31,7 @@ Version "0.2"
 Dep lwt remote "http://ocsigen.org/download/lwt-2.3.2.tar.gz"
     Flag "--disable-extra"
     Flag "--disable-preemptive"
-    Make "build"
+    Build "make build"
 ```
 
 * The first non-empty line should **always** be version spec, which
@@ -46,7 +46,8 @@ Dep lwt remote "http://ocsigen.org/download/lwt-2.3.2.tar.gz"
     is given below
   * source location: a **quoted** URI of the package you want
     installed
-* You can also specify extra `configure` flags or `make` targets.
+* You can also specify extra `configure` flags, custom build or
+  installation commands.
 * Dependencies will be built in the order, defined by their `Requires`
   section; all dependencies, not defined in `brb.conf` explicitly,
   will be resolved as recipes (see bellow).
@@ -95,7 +96,7 @@ and [homebrew](http://mxcl.github.com/homebrew/)).
   textile
   $ cat $HOME/.brb/recipes/textile
   Dep textile darcs "http://komar.bitcheese.net/darcs/textile-ocaml"
-  Make "all"
+  Build "make all"
   ```
 * A recipe repository is a directory with one or more recipes; it can be
   added to search path with `Repository` statement:
@@ -107,11 +108,12 @@ and [homebrew](http://mxcl.github.com/homebrew/)).
   Repository "/path/to/repository" "custom-repository"
   ```
 * To **use** a recipe, write a `Dep` block with *recipe* type; note, that
-  all subfields, like `Make` or `Flag` will be merged with recipe defaults.
+  all subfields, like `Build`, `Install` or `Flag` will be merged with
+  recipe defaults.
 
   ```conf
   Dep textile recipe "default"
-      Make "all"
+      Build "make all"
   ```
 
 ## More?
