@@ -1,26 +1,20 @@
 open Common
 
 
-let () = SubCommand.register & SubCommand.make
-  ~name:"build"
-  ~synopsis:"Build the project in the current directory"
-  ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
-         "*already* built dependencies, listed in 'brb.conf'.")
-  Barbra.build
-and () = SubCommand.register & SubCommand.make
-  ~name:"build-deps"
-  ~synopsis:"Build project dependencies"
-  ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
-         "*already* built dependencies, listed in 'brb.conf'.")
-  Barbra.build_deps
-and () = SubCommand.register & SubCommand.make
-  ~name:"rebuild"
-  ~synopsis:"Rebuild all dependencies along with the project"
-  Barbra.rebuild
-and () = SubCommand.register & SubCommand.make
-  ~name:"rebuild-deps"
-  ~synopsis:"Rebuild all project dependencies"
-  Barbra.rebuild_deps
+let () =
+  let specs = [("--only-deps", Arg.Set Barbra.only_deps,
+                "Act on dependencies only, ignoring project sources");
+               ("--force", Arg.Set Barbra.force_build,
+                "Force build, even if the '_dep' directory already exists")]
+  in
+
+  let scmd = SubCommand.make
+    ~name:"build"
+    ~synopsis:"Build the project in the current directory"
+    ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
+              "*already* built dependencies, listed in 'brb.conf'.")
+    Barbra.build
+  in SubCommand.register ({ scmd with SubCommand.specs = specs })
 and () = SubCommand.register & SubCommand.make
   ~name:"clean"
   ~synopsis:"Remove '_dep' directory with built dependencies"

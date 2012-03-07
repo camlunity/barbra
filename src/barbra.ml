@@ -3,6 +3,8 @@ open Common
 
 include Global
 
+let only_deps   = ref false
+let force_build = ref false
 
 (** [with_config f] Executes a given function, passing parsed config
     file as an argument. *)
@@ -13,14 +15,8 @@ let with_config f =
   else
     Log.error "can't find brb.conf in %S" base_dir
 
-
-let cleanup () =
-  if Filew.is_directory dep_dir then
-    Fs_util.remove_directory_recursive dep_dir
-
-
 (* assuming we are in project's root dir *)
-let build_deps () =
+let rec build_deps () =
   let rec go = function
     | [] -> Log.info "Dependencies built successfully!"
     | ({ name; package; _ } as dep) :: conf ->
@@ -87,8 +83,7 @@ let build_deps () =
       end
   in with_config go
 
-
-let build_project () = begin
+and build_project () = begin
   Log.info "Building the project (from %S)" base_dir;
   Res.exn_res & Install.makefile#install
     ~source_dir:base_dir
@@ -99,32 +94,17 @@ let build_project () = begin
   Log.info "Project built succesfully!"
 end
 
-let deps_are_built () = Filew.is_directory dep_dir
+and build () =
+  if not (Filew.is_directory dep_dir) || !force_build then begin
+    cleanup ();
+    build_deps ();
+    if not !only_deps then
+      build_project ()
+  end
 
+and cleanup () =
+  if Filew.is_directory dep_dir then
+    Fs_util.remove_directory_recursive dep_dir
 
-let build_gen ~proj () =
-  let () =
-    if deps_are_built ()
-    then ()
-    else build_deps ()
-  in
-  if proj then build_project () else ()
-
-
-let rebuild_gen ~proj () = begin
-  cleanup ();
-  build_gen ~proj ();
-end
-
-
-let build () = build_gen ~proj:true ()
-
-let rebuild () = rebuild_gen ~proj:true ()
-
-let build_deps () = build_gen ~proj:false ()
-
-let rebuild_deps () = rebuild_gen ~proj:false ()
-
-
-let run_with_env cmd =
+and run_with_env cmd =
   Res.exn_res (Env.exec_with_env cmd)

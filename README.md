@@ -52,7 +52,7 @@ Dep lwt remote "http://ocsigen.org/download/lwt-2.3.2.tar.gz"
   section; all dependencies, not defined in `brb.conf` explicitly,
   will be resolved as recipes (see bellow).
 
-Once you're done with `brb.conf`, run `brb rebuild` from the top
+Once you're done with `brb.conf`, run `brb build` from the top
 directory of you project -- this will fetch all listed dependencies,
 build them and then build your project in an isolated `barbra`
 environment with installed dependencies:
