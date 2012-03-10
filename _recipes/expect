@@ -1,2 +1,0 @@
-Dep expect remote "http://forge.ocamlcore.org/frs/download.php/475/ocaml-expect-0.0.2.tar.gz"
-    Requires pcre, extlib, oUnit
