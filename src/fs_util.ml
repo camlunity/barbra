@@ -4,7 +4,9 @@
 open Common
 
 let make_directories_p lst =
-  exec_exn ("mkdir" :: "-p" :: lst)
+  match List.filter ~f:(fun p -> not (Filew.is_directory p)) lst with
+    | []      -> ()
+    | missing -> exec_exn ("mkdir" :: "-p" :: missing)
 
 let make_directory_p d =
   make_directories_p [d]
