@@ -2,9 +2,10 @@ open Common
 
 
 let () =
-  let specs = [("--only-deps", Arg.Set Barbra.only_deps,
+  let only_deps = ref false and force_build = ref false in
+  let specs = [("--only-deps", Arg.Set only_deps,
                 "Act on dependencies only, ignoring project sources");
-               ("--force", Arg.Set Barbra.force_build,
+               ("--force", Arg.Set force_build,
                 "Force build, even if the '_dep' directory already exists")]
   in
 
@@ -13,8 +14,8 @@ let () =
     ~synopsis:"Build the project in the current directory"
     ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
               "*already* built dependencies, listed in 'brb.conf'.")
-    Barbra.build
-  in SubCommand.register ({ scmd with SubCommand.specs = specs })
+    (fun () -> Barbra.build ~only_deps:!only_deps ~force_build:!force_build)
+  in SubCommand.(register { scmd with specs = specs })
 and () = SubCommand.register & SubCommand.make
   ~name:"clean"
   ~synopsis:"Remove '_dep' directory with built dependencies"
@@ -24,6 +25,14 @@ and () = SubCommand.register & SubCommand.make
   ~synopsis:"Fetch the latest 'purse' full of fresh recipes!"
   ~help:"Clones or updates 'purse' repository in $HOME/.brb/recipes."
   Barbra.update
+and () =
+  let arg = ref "" in
+  let cmd = SubCommand.make
+    ~name:"install"
+    ~synopsis:"Install a single recipe to the '_dep' directory"
+    ~usage:"recipe"
+    (fun () -> Barbra.install !arg)
+  in SubCommand.(register { cmd with anon = (:=) arg })
 and () =
   let args = ref [] in
   let cmd = SubCommand.make

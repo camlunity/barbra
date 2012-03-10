@@ -3,23 +3,11 @@ open Common
 
 include Global
 
-let only_deps   = ref false
-let force_build = ref false
+(* Internal. *)
 
-(** [with_config f] Executes a given function, passing parsed config
-    file as an argument. *)
-let with_config f =
-  let conf = base_dir </> brb_conf in
-  if Sys.file_exists conf then
-    f (Config.from_file conf)
-  else
-    Log.error "can't find brb.conf in %S" base_dir
-
-(* assuming we are in project's root dir *)
-let rec build_deps () =
-  let rec go = function
-    | [] -> Log.info "Dependencies built successfully!"
-    | ({ name; package; _ } as dep) :: conf ->
+let build_deps = let rec go = function
+  | [] -> Log.info "Dependencies built successfully!"
+  | ({ name; package; _ } as dep) :: conf ->
       let go_temp_dir project_path =
         go & { dep with package = Temporary (`Directory, project_path) }
           :: conf
@@ -81,7 +69,7 @@ let rec build_deps () =
         | Installed | Recipe _ ->
           go conf
       end
-  in with_config go
+  in go
 
 and build_project () = begin
   Log.info "Building the project (from %S)" base_dir;
@@ -94,11 +82,17 @@ and build_project () = begin
   Log.info "Project built successfully!"
 end
 
-and build () =
-  if not (Filew.is_directory dep_dir) || !force_build then begin
+(* Public API. *)
+
+let rec build ~only_deps ~force_build =
+  let conf_path = base_dir </> brb_conf in
+  if not (Filew.is_file conf_path) then
+    Log.error "can't find %s in %S" brb_conf base_dir;
+
+  if not (Filew.is_directory dep_dir) || force_build then begin
     cleanup ();
-    build_deps ();
-    if not !only_deps then
+    build_deps (Config.from_file conf_path);
+    if not only_deps then
       build_project ()
   end
 
@@ -117,6 +111,9 @@ and update () =
     else
       exec_exn ["git"; "clone"; "https://github.com/camlunity/purse.git";
                 recipe_dir]
+
+and install _recipe =
+  ()
 
 and run_with_env cmd =
   Res.exn_res (Env.exec_with_env cmd)
