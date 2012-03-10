@@ -19,6 +19,11 @@ and () = SubCommand.register & SubCommand.make
   ~name:"clean"
   ~synopsis:"Remove '_dep' directory with built dependencies"
   Barbra.cleanup
+and () = SubCommand.register & SubCommand.make
+  ~name:"update"
+  ~synopsis:"Fetch the latest 'purse' full of fresh recipes!"
+  ~help:"Clones or updates 'purse' repository in $HOME/.brb/recipes."
+  Barbra.update
 and () =
   let args = ref [] in
   let cmd = SubCommand.make

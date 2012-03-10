@@ -14,7 +14,6 @@ let etc_dir = dep_dir </> "etc"
 let env_sh = dep_dir </> "env.sh"
 
 let recipe_dir = Sys.getenv "HOME" </> ".brb" </> "recipes"
-let () = Fs_util.make_directory_p recipe_dir
 
 let env = [ (`Prepend, "OCAMLPATH", lib_dir)
           ; (`Prepend, "PATH", bin_dir)

@@ -91,7 +91,7 @@ and build_project () = begin
     ~install_cmd:"make install"
     ~flags:[]
     ~patches:[];
-  Log.info "Project built succesfully!"
+  Log.info "Project built successfully!"
 end
 
 and build () =
@@ -105,6 +105,18 @@ and build () =
 and cleanup () =
   if Filew.is_directory dep_dir then
     Fs_util.remove_directory_recursive dep_dir
+
+and update () =
+  if Filew.is_directory recipe_dir then
+    let open WithM in
+    let open WithRes in
+          (* FIXME(superbobry): get rid of 'Res'! *)
+          let res = bindres with_sys_chdir recipe_dir & fun _old_path ->
+            exec ["git"; "pull"; "origin"; "master"]
+          in Res.exn_res res
+    else
+      exec_exn ["git"; "clone"; "https://github.com/camlunity/purse.git";
+                recipe_dir]
 
 and run_with_env cmd =
   Res.exn_res (Env.exec_with_env cmd)
