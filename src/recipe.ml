@@ -32,10 +32,21 @@ class repository ~name ~path = object
         let dep = Ast.to_dep (Parser.recipe Lexer.token lexbuf) in
         Log.debug "Recipe %S is found in repository %S" recipe name;
 
-        (* TODO(superbobry): make sure the recipe has the same name as
-           the filename; so for instance recipe 'lwt' should have
-           'Dep lwt ...' line inside *)
-        dep
+        (* Note(superbobry): make sure the recipe has the same name
+           as the filename; so for instance recipe 'lwt' should have
+           'Dep lwt ...' line inside. *)
+        if dep.name <> recipe then
+          raise (Recipe_invalid recipe);
+
+        (* Note(superbobry): all relative paths should be resolved,
+           using repository root as base. *)
+        { dep with
+          patches = List.map ~f:(fun patch ->
+            if Filename.is_relative patch then
+              path </> patch
+            else
+              patch
+          ) dep.patches }
       with exn ->
         begin
           close_in ic;
@@ -55,7 +66,12 @@ class repository ~name ~path = object
           name path
     with
       | Unix.Unix_error (Unix.ENOENT, _, _) ->
-        Log.error "Recipe repository %S at %S doesn't exist" name path
+          if name <> "default" then
+            Log.error "Recipe repository %S at %S doesn't exist" name path
+          else
+            Log.error
+              "Recipe repository %S at %S doesn't exist. Try running 'brb update'?"
+              name path
       | Unix.Unix_error (Unix.EPERM, _, _)  ->
         Log.error
           "Recipe repository %S at %S is not readable; check permissions?"
