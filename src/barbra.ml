@@ -85,16 +85,14 @@ end
 (* Public API. *)
 
 let rec build ~only_deps ~force_build =
-  let conf_path = base_dir </> brb_conf in
-  if not (Filew.is_file conf_path) then
-    Log.error "can't find %s in %S" brb_conf base_dir;
-
-  if not (Filew.is_directory dep_dir) || force_build then begin
-    cleanup ();
-    build_deps (Config.from_file conf_path);
-    if not only_deps then
-      build_project ()
-  end
+  let open Config in
+      let { deps; _ } = resolve (from_file (base_dir </> brb_conf)) in
+      if not (Filew.is_directory dep_dir) || force_build then begin
+        cleanup ();
+        build_deps deps;
+        if not only_deps then
+          build_project ()
+      end
 
 and cleanup () =
   if Filew.is_directory dep_dir then
@@ -112,8 +110,13 @@ and update () =
       exec_exn ["git"; "clone"; "https://github.com/camlunity/purse.git";
                 recipe_dir]
 
-and install _recipe =
-  ()
+  and install recipe =
+    (* TODO(superbobry): do not reinstall already installed packages. *)
+    let open Config in
+        let conf = from_file (base_dir </> brb_conf) in
+        let { deps; _ } =
+          resolve { conf with deps = [conf.world#resolve_any ~recipe] }
+        in build_deps deps
 
 and run_with_env cmd =
   Res.exn_res (Env.exec_with_env cmd)

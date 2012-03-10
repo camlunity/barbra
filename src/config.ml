@@ -2,6 +2,12 @@
 open Common
 open Types
 
+type t =
+    {
+      world : Recipe.world;
+      deps  : dep list
+    }
+
 module Graph = Graph.Make(String)
 
 let rec resolve_requirements world known =
@@ -35,7 +41,25 @@ let resolve_build_order known =
   Log.info "Build order: %s" (String.concat ", " build_order);
   List.map ~f:(Hashtbl.find known) build_order
 
+let resolve { deps; world } =
+  let known = Hashtbl.create (List.length deps) in
+  List.iter deps
+    ~f:(fun ({ name; _ } as dep) ->
+      if Hashtbl.mem known name then
+        Log.error "Duplicate dependency %S in %S" name Global.brb_conf
+      else
+        Hashtbl.add known name dep;
+    );
+
+  {
+    world;
+    deps = known |> resolve_requirements world |> resolve_build_order
+  }
+
 let rec from_file path =
+  if not (Filew.is_file path) then
+    Log.error "can't find %s in %S" Global.brb_conf (Filename.dirname path);
+
   let ic = open_in path in
   try
     from_lexbuf (Lexing.from_channel ic)
@@ -71,17 +95,4 @@ and from_lexbuf lexbuf =
             }
           | (Remote _  | Local _ | Temporary _
                 | Bundled _ | VCS _   | Installed) -> dep
-      ) in
-
-      let known = Hashtbl.create (List.length deps) in
-      List.iter deps
-        ~f:(fun ({ name; _ } as dep) ->
-          if Hashtbl.mem known name then
-            Log.error "Duplicate dependency %S in %S" name Global.brb_conf
-          else
-            Hashtbl.add known name dep;
-        );
-
-      known
-      |> resolve_requirements world
-      |> resolve_build_order
+      ) in { world; deps }
