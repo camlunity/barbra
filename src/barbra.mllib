@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2b495baa20774c265ff5ca2e8321055a)
+# DO NOT EDIT (digest: 10750097eb226dbbd8237af77bd2de79)
 Barbra
 Config
 Source
@@ -11,7 +11,7 @@ Syscaps
 Lexer
 Parser
 Env
-Subcommand
+SubCommand
 ArgExt
 FormatExt
 Recipe

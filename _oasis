@@ -1,18 +1,14 @@
-OASISFormat: 0.2
+OASISFormat: 0.3
 Name:        barbra
 Version:     0.2
 Synopsis:    Damn Simple Package Manager
 Authors:     camlunity
 License:     MIT
-Plugins:     META (0.2), StdFiles (0.2), DevFiles (0.2)
+Plugins:     META (0.3), StdFiles (0.3), DevFiles (0.3)
 XStdFilesREADME:  false
 XStdFilesAUTHORS: false
 
 BuildTools: ocamlbuild
-
-Flag tests
-  Description: Build tests
-  Default: true
 
 Executable brb
   Path:       bin
@@ -26,7 +22,7 @@ Library barbra
   Modules:    Barbra
   BuildDepends: str
   InternalModules: Config, Source, Install, Global, Types, Log, Syscaps,
-                   Lexer, Parser, Env, Subcommand, ArgExt, FormatExt,
+                   Lexer, Parser, Env, SubCommand, ArgExt, FormatExt,
                    Recipe, Graph
   NativeOpt:  -w @a
   ByteOpt:    -w @a
