@@ -36,8 +36,3 @@ setup.data:
 .PHONY: build doc test all install uninstall reinstall clean distclean configure
 
 # OASIS_STOP
-
-run:
-	$(MAKE) clean
-	$(MAKE) all
-	env OCAMLRUNPARAM=b ./brb.byte rebuild-deps
