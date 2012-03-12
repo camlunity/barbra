@@ -26,13 +26,15 @@ and () = SubCommand.register & SubCommand.make
   ~help:"Clones or updates 'purse' repository in $HOME/.brb/recipes."
   Barbra.update
 and () =
-  let arg = ref "" in
+  let args = ref [] in
   let cmd = SubCommand.make
     ~name:"install"
-    ~synopsis:"Install a single recipe to the '_dep' directory"
-    ~usage:"recipe"
-    (fun () -> Barbra.install !arg)
-  in SubCommand.(register { cmd with anon = (:=) arg })
+    ~synopsis:"Install one or more recipes to the '_dep' directory"
+    ~usage:"recipe*"
+    (fun () -> Barbra.install !args)
+  in
+
+  SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args })
 and () =
   let args = ref [] in
   let cmd = SubCommand.make
@@ -45,7 +47,7 @@ and () =
     (fun () -> Barbra.run_with_env !args)
   in
 
-  SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args})
+  SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args })
 and () =
   let arg = ref "" in
   let cmd = SubCommand.make
