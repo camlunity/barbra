@@ -110,6 +110,11 @@ let update () =
     exec_exn ["git"; "clone"; "https://github.com/camlunity/purse.git";
               recipe_dir]
 
+let list () =
+  let open Config in
+      let { world; _ } = from_file (base_dir </> brb_conf) in
+      world#iter ~f:(Printf.printf "%s/%s\n")
+
 let install recipes =
     (* TODO(superbobry): do not reinstall already installed packages. *)
     let open Config in

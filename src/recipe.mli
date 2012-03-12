@@ -12,6 +12,10 @@ class repository : name:string -> path:string -> object
       not present in this repository.
       Raises [Recipe_invalid recipe] when requested recipe has invalid
       syntax (for example is missing 'Dep ...' section) *)
+
+  method iter : f:(string -> unit) -> unit
+  (** [iter ~f] Traverses all known recipes in the current repository
+      and applies [f] to each of them. *)
 end
 
 class world : repositories:(string * string) list -> object
@@ -22,4 +26,8 @@ class world : repositories:(string * string) list -> object
   method resolve_any : recipe:string -> dep
   (** [resolve_any ~recipe] Tries to resolve a [recipe] in all known
       repositories and return the first match found. *)
+
+  method iter : f:(string -> string -> unit) -> unit
+  (** [iter ~f] Traverses all recipes in all known repositories and
+      applies [f] to each of them. *)
 end

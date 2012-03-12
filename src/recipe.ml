@@ -58,6 +58,8 @@ class repository ~name ~path = object
     else
       raise (Recipe_not_found (recipe, path))
 
+  method iter ~f = StringSet.iter f (Lazy.force recipes)
+
   initializer
     try
       let stat = Unix.stat path in
@@ -115,5 +117,9 @@ class world ~repositories = object
     match !dep_ref with
       | Some dep -> dep
       | None ->
-        Log.error "Recipe %S not found" recipe
+          Log.error "Recipe %S not found" recipe
+
+  method iter ~f = StringMap.iter
+    (fun repository r -> r#iter ~f:(f repository))
+    repositories
 end

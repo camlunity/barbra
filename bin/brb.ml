@@ -35,6 +35,10 @@ and () =
   in
 
   SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args })
+and () = SubCommand.register & SubCommand.make
+  ~name:"list"
+  ~synopsis:"List all available recipes in all repositories"
+  Barbra.list
 and () =
   let args = ref [] in
   let cmd = SubCommand.make
