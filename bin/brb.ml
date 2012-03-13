@@ -48,7 +48,11 @@ and () =
            "variables to the '_dep' directory, which allows 'ocamlfind'  \n" ^
            "to use binaries and libraries, installed by 'brb'.")
     ~usage:"cmd [args*]"
-    (fun () -> Barbra.run_with_env (List.rev !args))
+    (fun () ->
+      Barbra.run_with_env & List.fold_left
+        ~f:(fun acc arg -> List.append acc (String.nsplit arg " "))
+        ~init:[]
+        !args)
   in
 
   SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args })
