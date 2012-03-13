@@ -31,7 +31,7 @@ and () =
     ~name:"install"
     ~synopsis:"Install one or more recipes to the '_dep' directory"
     ~usage:"recipe*"
-    (fun () -> Barbra.install !args)
+    (fun () -> Barbra.install (List.rev !args))
   in
 
   SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args })
@@ -48,7 +48,7 @@ and () =
            "variables to the '_dep' directory, which allows 'ocamlfind'  \n" ^
            "to use binaries and libraries, installed by 'brb'.")
     ~usage:"cmd [args*]"
-    (fun () -> Barbra.run_with_env !args)
+    (fun () -> Barbra.run_with_env (List.rev !args))
   in
 
   SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args })
