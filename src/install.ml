@@ -2,6 +2,7 @@ open Common
 open Types
 open Printf
 open WithM
+open Global
 
 module List = ListLabels
 module G = Global

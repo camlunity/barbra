@@ -36,3 +36,26 @@ let create_dirs =
       stublibs_dir
     ]
   ) in fun () -> Lazy.force create_dirs_lazy
+
+let expand_vars x =
+  Printf.printf "inside expand_vars `%s`\n" x;
+  Str.global_substitute
+    (Str.regexp "\\$[A-Za-z_]+")
+    (fun m ->
+      let var = Str.matched_string m in
+      Printf.printf "var = %s\n" var;
+      match var with
+        | "$base_dir" -> base_dir
+        | "$recipe_dir" -> recipe_dir
+        | "$dep_dir" -> dep_dir
+        | "$lib_dir" -> lib_dir
+        | "$bin_dir" -> bin_dir
+        | _ -> getenv var) x
+
+
+
+
+
+
+
+
