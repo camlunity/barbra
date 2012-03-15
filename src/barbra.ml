@@ -84,7 +84,11 @@ end
 
 (* Public API. *)
 
-let rec build ~only_deps ~force_build =
+let cleanup () =
+  if Filew.is_directory dep_dir then
+    Fs_util.remove_directory_recursive dep_dir
+
+let build ~only_deps ~force_build =
   let open Config in
       let { deps; _ } = resolve (from_file (base_dir </> brb_conf)) in
       if not (Filew.is_directory dep_dir) || force_build then begin
@@ -94,11 +98,7 @@ let rec build ~only_deps ~force_build =
           build_project ()
       end
 
-and cleanup () =
-  if Filew.is_directory dep_dir then
-    Fs_util.remove_directory_recursive dep_dir
-
-and update () =
+let update () =
   if Filew.is_directory recipe_dir then
     let open WithM in
     let open WithRes in
@@ -110,13 +110,22 @@ and update () =
     exec_exn ["git"; "clone"; "https://github.com/camlunity/purse.git";
               recipe_dir]
 
-  and install recipe =
+let list () =
+  let open Config in
+      let { world; _ } = from_file (base_dir </> brb_conf) in
+      world#iter ~f:(Printf.printf "%s/%s\n")
+
+let install recipes =
     (* TODO(superbobry): do not reinstall already installed packages. *)
     let open Config in
         let conf = from_file (base_dir </> brb_conf) in
-        let { deps; _ } =
-          resolve { conf with deps = [conf.world#resolve_any ~recipe] }
-        in build_deps deps
+        let deps = List.map
+          ~f:(fun recipe -> conf.world#resolve_any ~recipe) recipes
+        in
+
+        (* Recursively resolve all dependencies and build the resulting
+           list of deps. *)
+        let { deps; _ } = resolve { conf with deps } in build_deps deps
 
 and run_with_env cmd =
   Res.exn_res (Env.exec_with_env cmd)
