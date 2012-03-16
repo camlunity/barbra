@@ -5,7 +5,8 @@ include Global
 
 (* Internal. *)
 
-let build_deps = let rec go = function
+let build_deps ?(clear_tmp=true) = 
+  let rec go = function
   | [] -> Log.info "Dependencies built successfully!"
   | ({ name; package; _ } as dep) :: conf ->
       let go_temp_dir project_path =
@@ -61,10 +62,10 @@ let build_deps = let rec go = function
             ~patches:dep.patches
           in
 
-          Log.info "Removing successfully built %S" project_path;
-          (* Note(gds): Kakadu recommends to allow user to decide:
-             remove bundled temporary files or not. *)
-          let () = Fs_util.remove_directory_recursive project_path in
+          let () = if clear_tmp then (
+            Log.info "Removing successfully built %S" project_path;
+	    Fs_util.remove_directory_recursive project_path 
+	  ) in
           go & { dep with package = Installed } :: conf
         | Installed | Recipe _ ->
           go conf
@@ -88,12 +89,12 @@ let cleanup () =
   if Filew.is_directory dep_dir then
     Fs_util.remove_directory_recursive dep_dir
 
-let build ~only_deps ~force_build =
+let build ?(clear_tmp=true) ~only_deps ~force_build =
   let open Config in
       let { deps; _ } = resolve (from_file (base_dir </> brb_conf)) in
       if not (Filew.is_directory dep_dir) || force_build then begin
         cleanup ();
-        build_deps deps;
+        build_deps ~clear_tmp deps;
         if not only_deps then
           build_project ()
       end

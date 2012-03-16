@@ -2,11 +2,13 @@ open Common
 
 
 let () =
-  let only_deps = ref false and force_build = ref false in
+  let only_deps = ref false and force_build = ref false and dont_clear_tmp = ref true in
   let specs = [("--only-deps", Arg.Set only_deps,
                 "Act on dependencies only, ignoring project sources");
                ("--force", Arg.Set force_build,
-                "Force build, even if the '_dep' directory already exists")]
+                "Force build, even if the '_dep' directory already exists");
+               ("--dont-clear-tmp", Arg.Set dont_clear_tmp,
+                "Don't remove sources of successfully builded dependencies")]
   in
 
   let scmd = SubCommand.make
@@ -14,7 +16,8 @@ let () =
     ~synopsis:"Build the project in the current directory"
     ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
               "*already* built dependencies, listed in 'brb.conf'.")
-    (fun () -> Barbra.build ~only_deps:!only_deps ~force_build:!force_build)
+    (fun () -> Barbra.build ~clear_tmp:(not !dont_clear_tmp) 
+      ~only_deps:!only_deps ~force_build:!force_build)
   in SubCommand.(register { scmd with specs = specs })
 and () = SubCommand.register & SubCommand.make
   ~name:"clean"
