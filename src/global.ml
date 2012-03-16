@@ -25,7 +25,9 @@ let env = [ (`Prepend, "OCAMLPATH", lib_dir)
           (* FIXME(superbobry): maybe there's a better way to do this. *)
           ; (`Set, "BRB_BASEDIR", base_dir)
           ; (`Set, "BRB_DEPDIR", dep_dir)
-          ]
+          ] @
+          (try [`Set, "MAKE", Sys.getenv "MAKE"] 
+           with Not_found -> [`Set, "MAKE", "make"])
 
 (** [create_dirs ()] Create initial directory structure for [brb]. *)
 let create_dirs =
