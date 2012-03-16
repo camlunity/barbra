@@ -13,7 +13,7 @@ let makefile : install_type = object
   method install ~source_dir ~build_cmd ~install_cmd ~flags ~patches = begin
     G.create_dirs ();
     Env.write_env ();
-    Log.info "getenv ~default:\"make\" \"MAKE\" is `%s`\n" (getenv ~default:"make" "MAKE");
+
     Log.info "Applying patches";
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
       List.iter patches ~f:(fun patch ->
