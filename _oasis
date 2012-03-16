@@ -1,6 +1,7 @@
 OASISFormat: 0.3
 Name:        barbra
 Version:     0.2
+OCamlVersion: >= 3.12
 Synopsis:    Damn Simple Package Manager
 Authors:     camlunity
 License:     MIT
