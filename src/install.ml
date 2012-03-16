@@ -26,6 +26,12 @@ let makefile : install_type = object
         Log.debug "Applied patch %S" patch;
       );
 
+      let make_wrapper cmd =
+	match String.nsplit (expand_vars cmd) " " with
+          | "make" :: args ->
+	    exec (getenv ~default:"make" "MAKE" :: args)
+          | cmd -> exec cmd
+      in
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
       Env.with_env & fun () ->
         (if Sys.file_exists "configure" then
@@ -45,13 +51,7 @@ let makefile : install_type = object
               exec (["sh" ; "./configure"] @ flags)
          else
             Res.return ()
-        ) >>= (fun () -> exec (String.nsplit (expand_vars build_cmd) " ")
-        ) >>= fun () ->
-        (* FIXME(superbobry): use $MAKE as default command and resolve
-           env variables with a special function. *)
-        match String.nsplit (expand_vars install_cmd) " " with
-          | "make" :: args ->
-            exec (getenv ~default:"make" "MAKE" :: args)
-          | cmd -> exec cmd
+        ) >>= (fun () -> make_wrapper build_cmd
+        ) >>= fun () -> make_wrapper install_cmd
   end
 end
