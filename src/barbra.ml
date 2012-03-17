@@ -100,16 +100,16 @@ let build ?(clear_tmp=true) ~only_deps ~force_build =
       end
 
 let update () =
-  if Filew.is_directory recipe_dir then
+  if Filew.is_directory (recipe_dir ()) then
     let open WithM in
     let open WithRes in
         (* FIXME(superbobry): get rid of 'Res'! *)
-        let res = bindres with_sys_chdir recipe_dir & fun _old_path ->
+        let res = bindres with_sys_chdir (recipe_dir()) & fun _old_path ->
           exec ["git"; "pull"; "origin"; "master"]
         in Res.exn_res res
   else
     exec_exn ["git"; "clone"; "https://github.com/camlunity/purse.git";
-              recipe_dir]
+              recipe_dir()]
 
 let list () =
   let open Config in

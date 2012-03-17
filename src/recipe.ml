@@ -83,7 +83,7 @@ end
 
 class world ~repositories = object
   val repositories = List.fold_right
-    (("default", Global.recipe_dir) :: repositories)
+    (("default", Global.recipe_dir ()) :: repositories)
     ~init:StringMap.empty
     ~f:(fun (name, path) -> StringMap.add name (new repository ~name ~path))
 

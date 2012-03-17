@@ -18,7 +18,7 @@ let () =
               "*already* built dependencies, listed in 'brb.conf'.")
     (fun () -> Barbra.build ~clear_tmp:(not !dont_clear_tmp) 
       ~only_deps:!only_deps ~force_build:!force_build)
-  in SubCommand.(register { scmd with specs = specs })
+  in SubCommand.(register { scmd with specs })
 and () = SubCommand.register & SubCommand.make
   ~name:"clean"
   ~synopsis:"Remove '_dep' directory with built dependencies"
@@ -30,6 +30,10 @@ and () = SubCommand.register & SubCommand.make
   Barbra.update
 and () =
   let args = ref [] in
+  let specs = [               
+    ("--default-repo", Arg.String Global.set_recipe_dir,
+     "Override default recipes directory (default is $HOME/.brb/recipes")
+    ] in
   let cmd = SubCommand.make
     ~name:"install"
     ~synopsis:"Install one or more recipes to the '_dep' directory"
@@ -37,7 +41,7 @@ and () =
     (fun () -> Barbra.install (List.rev !args))
   in
 
-  SubCommand.(register { cmd with anon = fun arg -> args := arg :: !args })
+  SubCommand.(register {{ cmd with anon = fun arg -> args := arg :: !args } with specs})
 and () = SubCommand.register & SubCommand.make
   ~name:"list"
   ~synopsis:"List all available recipes in all repositories"

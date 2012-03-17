@@ -14,7 +14,9 @@ let stublibs_dir = lib_dir </> "stublibs"
 let etc_dir = dep_dir </> "etc"
 let env_sh = dep_dir </> "env.sh"
 
-let recipe_dir = Sys.getenv "HOME" </> ".brb" </> "recipes"
+let recipe_dir,set_recipe_dir = 
+  let ans = ref (Sys.getenv "HOME" </> ".brb" </> "recipes") in
+  (fun () -> !ans), ((:=)ans)
 
 let env = [ (`Prepend, "OCAMLPATH", lib_dir)
           ; (`Prepend, "PATH", bin_dir)
@@ -46,7 +48,7 @@ let expand_vars =
       let var = Str.matched_string m in
       match var with
         | "$base_dir" -> base_dir
-        | "$recipe_dir" -> recipe_dir
+        | "$recipe_dir" -> recipe_dir ()
         | "$dep_dir" -> dep_dir
         | "$lib_dir" -> lib_dir
         | "$bin_dir" -> bin_dir
