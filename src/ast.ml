@@ -69,7 +69,7 @@ let to_dep ((name, _source, _location, metas) as ast) =
      the order is preserved. *)
   let (build_cmd, install_cmd, flags, patches, requires) =
     List.fold_left metas
-      ~init:("make", "make install", [], [], [])
+      ~init:("$MAKE", "$MAKE install", [], [], [])
       ~f:(fun (bc, ins, fs, ps, rs) meta -> match meta with
         | `Build bc -> (bc, ins, fs, ps, rs)
         | `Install ins -> (bc, ins, fs, ps, rs)
