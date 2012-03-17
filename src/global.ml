@@ -39,19 +39,18 @@ let create_dirs =
     ]
   ) in fun () -> Lazy.force create_dirs_lazy
 
-let expand_vars x =
+let expand_vars =
   Str.global_substitute
     (Str.regexp "\\$[A-Za-z_]+")
     (fun m ->
       let var = Str.matched_string m in
       match var with
-        | "$MAKE" -> getenv ~default:"make" var
         | "$base_dir" -> base_dir
         | "$recipe_dir" -> recipe_dir
         | "$dep_dir" -> dep_dir
         | "$lib_dir" -> lib_dir
         | "$bin_dir" -> bin_dir
-        | _ -> getenv var) x
+        | _ -> getenv (Str.string_after var 1) )
 
 
 

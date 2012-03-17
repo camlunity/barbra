@@ -28,8 +28,6 @@ let makefile : install_type = object
 
       let make_wrapper cmd =
 	match String.nsplit (expand_vars cmd) " " with
-          | "make" :: args ->
-	    exec (getenv ~default:"make" "MAKE" :: args)
           | cmd -> exec cmd
       in
     WithRes.bindres WithRes.with_sys_chdir source_dir & fun _old_path ->
