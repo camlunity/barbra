@@ -82,9 +82,15 @@ end
 
 
 class world ~repositories = object
-  val repositories = List.fold_right
-    (("default", Global.recipe_dir ()) :: repositories)
-    ~init:StringMap.empty
+  val repositories =
+    let repos = if Sys.file_exists (Global.recipe_dir ())
+      then (("default", Global.recipe_dir ()) :: repositories)
+      else begin
+        Log.info "Default recipes directory %s is absent. Skipping it" (Global.recipe_dir ());
+        repositories
+      end
+    in
+    List.fold_right repos ~init:StringMap.empty
     ~f:(fun (name, path) -> StringMap.add name (new repository ~name ~path))
 
   method resolve ~repository ~recipe =
