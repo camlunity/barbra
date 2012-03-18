@@ -76,3 +76,19 @@ let exec = Res.wrap1 Subprocess.exec
 let exec_exn = Subprocess.exec
 let exec_exitcode ?(silent=false) args =
   Res.res_exn (fun () -> Subprocess.exec_exitcode ~silent args)
+
+module OSInfo = struct
+  type family_t = Win32 | Cygwin | Linux | FreeBSD | Darwin | OtherUnix
+  let family =
+    match Sys.os_type with
+      | "Unix" -> begin
+        match Filew.with_process_in "uname -s" input_line with
+          | "Darwin" -> Darwin
+          | "Linux"  -> Linux
+          | "FreeBSD" -> FreeBSD
+          | _ -> OtherUnix
+      end
+      | "Win32" -> Win32
+      | "Cygwin" -> Cygwin
+      | _ -> Log.error "Fatal error. OCaml API was changed in Sys.os_type"
+end
