@@ -29,7 +29,7 @@ class repository ~name ~path = object
       let ic = open_in abs_path in
       let lexbuf = Lexing.from_channel ic in
       try
-        let dep = Ast.to_dep (Parser.recipe Lexer.token lexbuf) in
+        let dep = Ast.to_dep (ParserHelper.smart_recipe Lexer.token lexbuf) in
         Log.debug "Recipe %S is found in repository %S" recipe name;
 
         (* Note(superbobry): make sure the recipe has the same name

@@ -1,7 +1,7 @@
 {
   open Parser
 
-  let keywords = Hashtbl.create 9
+  let keywords = Hashtbl.create 12
   let () = List.iter (fun (kwd, token) -> Hashtbl.add keywords kwd token) [
     ("dep",  DEP);
     ("build", BUILD);
@@ -10,7 +10,10 @@
     ("install", INSTALL);
     ("requires", REQUIRES);
     ("repository", REPOSITORY);
-    ("version", VERSION)
+    ("version", VERSION);
+    ("if", IF_MACRO);
+    ("endif", ENDIF_MACRO);
+    ("os_type", OSTYPE)
   ]
 }
 
@@ -20,8 +23,10 @@ rule token = parse
   | '\n'             {Lexing.new_line lexbuf; token lexbuf}
   | "\r\n"           {Lexing.new_line lexbuf; token lexbuf}
   | ','              {COMMA}
+  | '('              {LBRA}
+  | ')'              {RBRA}
   | eof              {EOF}
-  | ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']+ as lxm {
+  | ['A'-'Z' 'a'-'z' '0'-'9' '%' '-' '_']+ as lxm {
     let lxm = String.lowercase lxm in
     try
       Hashtbl.find keywords lxm

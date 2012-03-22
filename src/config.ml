@@ -56,6 +56,8 @@ let resolve { deps; world } =
     deps = known |> resolve_requirements world |> resolve_build_order
   }
 
+module PH=ParserHelper
+
 let rec from_file path =
   if not (Filew.is_file path) then
     Log.error "can't find %s in %S" Global.brb_conf (Filename.dirname path);
@@ -72,7 +74,7 @@ and from_string s =
   from_lexbuf (Lexing.from_string s)
 
 and from_lexbuf lexbuf =
-  match Parser.config Lexer.token lexbuf with
+  match ParserHelper.smart_config Lexer.token lexbuf with
     | { Ast.version; _ } when version <> Global.version ->
       Log.error "Unsupported %S version %S, try %S?"
         Global.brb_conf

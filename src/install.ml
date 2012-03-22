@@ -27,6 +27,8 @@ let makefile : install_type = object
       );
 
       let make_wrapper cmd =
+        Log.info "make_wrapper cmd=%s" cmd;
+        Log.info "make_wrapper newcmd=%s" (expand_vars cmd);
 	match String.nsplit (expand_vars cmd) " " with
           | cmd -> exec cmd
       in

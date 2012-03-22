@@ -1,19 +1,22 @@
 %{
   open StdLabels
+  type cond_type = [ `OsType of string ]
 %}
 
 %token VERSION
 %token REPOSITORY DEP
 %token FLAG PATCH REQUIRES INSTALL BUILD
-%token COMMA
+%token COMMA OSTYPE
+%token IF_MACRO ENDIF_MACRO
+%token LBRA RBRA
 %token EOF
 %token <string> IDENT
 %token <string> VALUE
 
-%start config recipe
+%start config recipe cond
 %type <Ast.ctxt> config
 %type <Ast.dep> recipe
-
+%type <[ `OsType of string ]> cond
 %%
 
 config:
@@ -62,5 +65,26 @@ stmt:
   | DEP IDENT IDENT VALUE meta_list {`Dep ($2, $3, $4, $5)}
   | IDENT {Log.error "brb.conf: invalid keyword %S" $1}
 ;
+cond:
+  | LBRA cond RBRA { $2 }
+  | OSTYPE LBRA IDENT RBRA { `OsType $3 }
 
 %%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
