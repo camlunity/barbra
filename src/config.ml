@@ -56,8 +56,6 @@ let resolve { deps; world } =
     deps = known |> resolve_requirements world |> resolve_build_order
   }
 
-module PH=ParserHelper
-
 let rec from_file path =
   if not (Filew.is_file path) then
     Log.error "can't find %s in %S" Global.brb_conf (Filename.dirname path);

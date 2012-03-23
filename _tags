@@ -1,34 +1,18 @@
 # OASIS_START
-# DO NOT EDIT (digest: cbe614c625a064e405bb8786ce0d03c8)
-# Ignore VCS directories, you can use the same kind of rule outside 
-# OASIS_START/STOP if you want to exclude directories that contains 
-# useless stuff for the build process
-<**/.svn>: -traverse
-<**/.svn>: not_hygienic
-".bzr": -traverse
-".bzr": not_hygienic
-".hg": -traverse
-".hg": not_hygienic
-".git": -traverse
-".git": not_hygienic
-"_darcs": -traverse
-"_darcs": not_hygienic
+# DO NOT EDIT (digest: 6c42401e92ed0c62ee75313c2b5b12e7)
 # Library barbra
-"src/barbra.cmxs": use_barbra
+"src": include
 <src/barbra.{cma,cmxa}>: oasis_library_barbra_byte
 <src/*.ml{,i}>: oasis_library_barbra_byte
 <src/barbra.{cma,cmxa}>: oasis_library_barbra_native
 <src/*.ml{,i}>: oasis_library_barbra_native
 <src/*.ml{,i}>: pkg_str
-# Executable test
 # Executable brb
 "bin/brb.byte": oasis_executable_brb_byte
 <bin/*.ml{,i}>: oasis_executable_brb_byte
 "bin/brb.byte": oasis_executable_brb_native
 <bin/*.ml{,i}>: oasis_executable_brb_native
-"bin/brb.byte": use_barbra
 "bin/brb.byte": pkg_str
-<bin/*.ml{,i}>: use_barbra
 <bin/*.ml{,i}>: pkg_str
 # OASIS_STOP
 

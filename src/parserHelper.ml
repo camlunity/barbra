@@ -22,7 +22,6 @@ let my_tokenizer (func: Lexing.lexbuf -> token) =
   let rec tokenizer lexbuf = 
     match func lexbuf with
       | IF_MACRO ->
-          Log.info "IF_MACRO found";
           let cond = eval_cond (Parser.cond Lexer.token lexbuf) in
           good_code := !good_code && cond;
           last_defined := "x" :: !last_defined;
@@ -31,8 +30,11 @@ let my_tokenizer (func: Lexing.lexbuf -> token) =
           if !last_defined = [] 
           then Log.error "closing unopened if macro. stack is (%s)" (String.concat "," !last_defined)
           else (last_defined := List.tl !last_defined; tokenizer lexbuf)
+      | EOF ->
+          if !last_defined <> []
+          then Log.error "Unclosed IF macro"
+          else EOF
       | x ->
-          Log.info "stack is (%s)" (String.concat "," !last_defined);
           if !good_code then x
           else tokenizer lexbuf
   in
@@ -44,9 +46,3 @@ let smart_parser hof (func: Lexing.lexbuf -> token) lexbuf =
 let smart_config = smart_parser config
 
 let smart_recipe = smart_parser recipe
-  
-  
-
-
-
-
