@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 10750097eb226dbbd8237af77bd2de79)
+# DO NOT EDIT (digest: f6e68000c635433dbb2350fb922fd4e6)
 Barbra
 Config
 Source
@@ -16,4 +16,5 @@ ArgExt
 FormatExt
 Recipe
 Graph
+ParserHelper
 # OASIS_STOP

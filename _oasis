@@ -15,8 +15,10 @@ Executable brb
   Path:       bin
   MainIs:     brb.ml
   BuildDepends: str
-  NativeOpt:  -w @a
-  ByteOpt:    -w @a
+  NativeOpt:  -w @a -w -4
+  ByteOpt:    -w @a -w -4
+  BuildDepends: barbra
+#  InternalModules: Common
 
 Library barbra
   Path:       src
@@ -24,9 +26,9 @@ Library barbra
   BuildDepends: str
   InternalModules: Config, Source, Install, Global, Types, Log, Syscaps,
                    Lexer, Parser, Env, SubCommand, ArgExt, FormatExt,
-                   Recipe, Graph
-  NativeOpt:  -w @a
-  ByteOpt:    -w @a
+                   Recipe, Graph, ParserHelper
+  NativeOpt:  -w @a -w -4
+  ByteOpt:    -w @a -w -4
 
 SourceRepository github
   Type:     git
