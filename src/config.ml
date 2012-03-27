@@ -41,6 +41,12 @@ let resolve_build_order known =
   Log.info "Build order: %s" (String.concat ", " build_order);
   List.map ~f:(Hashtbl.find known) build_order
 
+let resolve_installed =
+  List.filter ~f:(fun {name;_} ->
+    (try ignore(Findlib.package_directory name); false
+     with Fl_package_base.No_such_package _ -> true)
+  )
+
 let resolve { deps; world } =
   let known = Hashtbl.create (List.length deps) in
   List.iter deps
@@ -53,7 +59,7 @@ let resolve { deps; world } =
 
   {
     world;
-    deps = known |> resolve_requirements world |> resolve_build_order
+    deps = known |> resolve_requirements world |> resolve_build_order |> resolve_installed
   }
 
 let rec from_file path =

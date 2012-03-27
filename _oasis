@@ -14,7 +14,7 @@ BuildTools: ocamlbuild
 Library barbra
   Path:       src
   Modules:    Barbra
-  BuildDepends: str
+  BuildDepends: str,findlib
   InternalModules: Config, Source, Install, Global, Types, Log, Syscaps,
                    Lexer, Parser, Env, SubCommand, ArgExt, FormatExt,
                    Recipe, Graph, ParserHelper
@@ -24,7 +24,7 @@ Library barbra
 Executable brb
   Path:       bin
   MainIs:     brb.ml
-  BuildDepends: str
+  BuildDepends: str,findlib
   NativeOpt:  -w @a -w -4
   ByteOpt:    -w @a -w -4
 
