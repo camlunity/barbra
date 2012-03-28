@@ -1,4 +1,4 @@
-
+open Printf
 open Common
 open Types
 
@@ -43,11 +43,13 @@ let resolve_build_order known =
 
 let resolve_installed =
   List.filter ~f:(fun {name;_} ->
-    (try ignore(Findlib.package_directory name); false
-     with Fl_package_base.No_such_package _ -> true)
+    (try ignore(Findlib.package_directory name);
+         printf "skip target %s\n" name;
+         false
+     with Fl_package_base.No_such_package _ -> Log.info "build package %s\n" name; true)
   )
 
-let resolve { deps; world } =
+let resolve ?(look_system_packs=true) { deps; world } =
   let known = Hashtbl.create (List.length deps) in
   List.iter deps
     ~f:(fun ({ name; _ } as dep) ->
@@ -59,7 +61,8 @@ let resolve { deps; world } =
 
   {
     world;
-    deps = known |> resolve_requirements world |> resolve_build_order |> resolve_installed
+    deps = known |> resolve_requirements world |> resolve_build_order
+      |> (if look_system_packs then resolve_installed else (fun x->x))
   }
 
 let rec from_file path =

@@ -89,9 +89,9 @@ let cleanup () =
   if Filew.is_directory dep_dir then
     Fs_util.remove_directory_recursive dep_dir
 
-let build ?(clear_tmp=true) ~only_deps ~force_build =
+let build ?(clear_tmp=true) ?(look_system_packs=true) ~only_deps ~force_build =
   let open Config in
-      let { deps; _ } = resolve (from_file (base_dir </> brb_conf)) in
+      let { deps; _ } = resolve ~look_system_packs (from_file (base_dir </> brb_conf)) in
       if not (Filew.is_directory dep_dir) || force_build then begin
         cleanup ();
         build_deps ~clear_tmp deps;

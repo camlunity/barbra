@@ -9,4 +9,4 @@ type t =
 val from_string : string -> t
 val from_file   : string -> t
 
-val resolve : t -> t
+val resolve : ?look_system_packs:bool -> t -> t

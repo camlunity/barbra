@@ -2,11 +2,14 @@ open Common
 
 
 let () =
-  let only_deps = ref false and force_build = ref false and dont_clear_tmp = ref true in
+  let only_deps = ref false and force_build = ref false and dont_clear_tmp = ref true
+  and look_system = ref false in
   let specs = [("--only-deps", Arg.Set only_deps,
                 "Act on dependencies only, ignoring project sources");
                ("--force", Arg.Set force_build,
                 "Force build, even if the '_dep' directory already exists");
+               ("--look-system-packs", Arg.Set look_system,
+                "Don't install pakcages installed system-wide");
                ("--dont-clear-tmp", Arg.Set dont_clear_tmp,
                 "Don't remove sources of successfully builded dependencies")]
   in
@@ -17,6 +20,7 @@ let () =
     ~help:("Assumes that '_dep' directory doesn't exist or contains\n" ^
               "*already* built dependencies, listed in 'brb.conf'.")
     (fun () -> Barbra.build ~clear_tmp:(not !dont_clear_tmp) 
+      ~look_system_packs:!look_system
       ~only_deps:!only_deps ~force_build:!force_build)
   in SubCommand.(register { scmd with specs })
 and () = SubCommand.register & SubCommand.make

@@ -1,8 +1,7 @@
 {
   open Parser
 
-  let keywords = Hashtbl.create 12
-  let () = List.iter (fun (kwd, token) -> Hashtbl.add keywords kwd token) [
+  let lst =  [
     ("dep",  DEP);
     ("build", BUILD);
     ("flag", FLAG);
@@ -15,6 +14,8 @@
     ("endif", ENDIF_MACRO);
     ("os_type", OSTYPE)
   ]
+  let keywords = Hashtbl.create (List.length lst)
+  let () = List.iter (fun (kwd, token) -> Hashtbl.add keywords kwd token) lst
 }
 
 rule token = parse
