@@ -3,6 +3,8 @@
 
   let lst =  [
     ("dep",  DEP);
+    ("subdep", SUBDEP);
+    ("endsubdep", ENDSUBDEP);
     ("build", BUILD);
     ("flag", FLAG);
     ("patch", PATCH);

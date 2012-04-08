@@ -9,9 +9,11 @@ type meta = [ `Build of string
             | `Patch of string
             | `Requires of string list ]
 
-type dep = (string * string * string * meta list)
+module SubDep = struct
+  type t = {name:string; metas: meta list; reqs: t list}
+end
+type dep = (string * string * string * meta list * SubDep.t list)
 type repository = (string * string)
-
 type ctxt =
     {
       version      : string;
@@ -31,7 +33,7 @@ let guess_archive s ~succ ~fail =
   else
     fail ()
 
-let to_package (_name, source, location, _meta) = match source with
+let to_package (_name, source, location, _meta, _subdeps) = match source with
   | "remote" ->
     guess_archive location
       ~succ:(fun x -> Remote (x, location))
@@ -63,26 +65,45 @@ let to_package (_name, source, location, _meta) = match source with
   | "recipe" -> Recipe location
   | _ -> Log.error "unsupported package type: %S\n" source
 
-let to_dep ((name, _source, _location, metas) as ast) =
+let to_dep ((name, _source, _location, metas, subdeps_ast) as ast) =
   (* Note(superbobry): fold an assorted list of meta fields into
      three categories -- make targets, configure flags and patches;
      the order is preserved. *)
-  let (build_cmd, install_cmd, flags, patches, requires) =
-    List.fold_left metas
-      ~init:("$MAKE", "$MAKE install", [], [], [])
-      ~f:(fun (bc, ins, fs, ps, rs) meta -> match meta with
+  let metagrabber = 
+    fun (bc, ins, fs, ps, rs) meta -> match meta with
         | `Build bc -> (bc, ins, fs, ps, rs)
         | `Install ins -> (bc, ins, fs, ps, rs)
         | `Flag f ->
           (bc, ins, (String.nsplit f " ") @ fs, ps, rs)
         | `Patch p -> (bc, ins, fs, p :: ps, rs)
         | `Requires r -> (bc, ins, fs, ps, rs @ r)
-    )
   in
-
+  let (build_cmd, install_cmd, flags, patches, requires) =
+    List.fold_left metas ~f:metagrabber
+      ~init:("$MAKE", "$MAKE install", [], [], [])
+  in
+  let subdeps = 
+    let subdeps_ast : SubDep.t list = subdeps_ast in
+    let rec map {SubDep.name;SubDep.metas;SubDep.reqs} =
+      let (_,_,flags,_,requires) = List.fold_left metas ~init:("","",[],[],[]) ~f:metagrabber in
+      let subdeps = List.map ~f:map reqs in
+      Types.SubDep.({name;requires;flags;subdeps})
+    in
+    List.map subdeps_ast ~f:map
+  in
   {
     name;
     package = to_package ast;
     install_cmd; build_cmd;
-    requires; flags; patches;
+    requires; flags; patches; subdeps
   }
+
+
+
+
+
+
+
+
+
+

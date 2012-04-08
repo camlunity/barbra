@@ -13,6 +13,10 @@ type package =
   | Temporary of local_type * string
   | Installed
 
+module SubDep = struct
+  type t = {name:string; requires: string list; flags: string list; subdeps: t list}
+end
+
 type dep =
     {
       name        : string;
@@ -21,7 +25,8 @@ type dep =
       flags       : string list;
       patches     : string list;
       build_cmd   : string;
-      install_cmd : string
+      install_cmd : string;
+      subdeps     : SubDep.t list
     }
 
 let vcs_type_of_string s = match String.lowercase s with

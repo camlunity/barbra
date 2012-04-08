@@ -4,7 +4,7 @@
 %}
 
 %token VERSION
-%token REPOSITORY DEP
+%token REPOSITORY DEP SUBDEP ENDSUBDEP
 %token FLAG PATCH REQUIRES INSTALL BUILD
 %token COMMA OSTYPE
 %token IF_MACRO ENDIF_MACRO
@@ -33,10 +33,19 @@ config:
 ;
 
 recipe:
-  | DEP IDENT IDENT VALUE meta_list {($2, $3, $4, $5)}
+  | DEP IDENT IDENT VALUE meta_list {($2, $3, $4, $5, [])}
   | IDENT {Log.error "recipe: invalid keyword %S" $1}
 ;
-
+subdep_list:
+  | subdep_list subdep {$2 :: $1}
+  |                    {print_endline "empty subdep list"; []}
+;
+subdep:
+  | SUBDEP IDENT  meta_list subdep_list ENDSUBDEP {
+    print_endline "subdep is parsed";
+    Ast.SubDep.({name=$2; metas=$3; reqs=$4})
+  }
+  
 meta_list:
   | meta_list meta {$2 :: $1}
   |                {[]}
@@ -62,7 +71,7 @@ stmt_list:
 
 stmt:
   | REPOSITORY VALUE VALUE {`Repository ($2, $3)}
-  | DEP IDENT IDENT VALUE meta_list {`Dep ($2, $3, $4, $5)}
+  | DEP IDENT IDENT VALUE meta_list subdep_list {`Dep ($2, $3, $4, $5, $6)}
   | IDENT {Log.error "brb.conf: invalid keyword %S" $1}
 ;
 cond:
