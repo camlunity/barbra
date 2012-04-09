@@ -91,7 +91,8 @@ and from_lexbuf lexbuf =
     | { Ast.deps; Ast.repositories; _ } ->
       let world = new Recipe.world ~repositories in
       let deps  = List.map deps ~f:(fun ast ->
-        let dep = Ast.to_dep ast in match dep.package with
+        let dep = Ast.to_dep ast in 
+        match dep.package with
           | Recipe location ->
             let ({ patches; flags; _ } as resolved) =
               world#resolve ~repository:location ~recipe:dep.name

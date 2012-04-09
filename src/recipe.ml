@@ -23,9 +23,14 @@ class repository ~name ~path = object
 
   method resolve ~recipe =
     let recipes  = Lazy.force recipes in
-    let abs_path = path </> recipe in
-
-    if StringSet.mem recipe recipes && Filew.is_file abs_path then
+    let (recipename,subps) =
+      match Str.split (Str.regexp "+") recipe with
+      | h::t -> (h,t)
+      | _ -> assert false
+    in
+    Log.info "resolving recipe %s" recipename;
+    let abs_path = path </> recipename in
+    if StringSet.mem recipename recipes && Filew.is_file abs_path then
       let ic = open_in abs_path in
       let lexbuf = Lexing.from_channel ic in
       try
@@ -35,18 +40,29 @@ class repository ~name ~path = object
         (* Note(superbobry): make sure the recipe has the same name
            as the filename; so for instance recipe 'lwt' should have
            'Dep lwt ...' line inside. *)
-        if dep.name <> recipe then
+        if dep.name <> recipename then
           raise (Recipe_invalid recipe);
 
         (* Note(superbobry): all relative paths should be resolved,
            using repository root as base. *)
-        { dep with
+        let ans = { dep with
           patches = List.map ~f:(fun patch ->
             if Filename.is_relative patch then
               path </> patch
             else
               patch
           ) dep.patches }
+        in
+        let ans = List.fold_left subps ~init:ans ~f:(fun ans depname ->
+          try
+            let dep = List.find ans.subdeps ~f:(fun {SubDep.name;_} -> name=depname) in
+            let requires = dep.SubDep.requires @ ans.requires in
+            let flags    = dep.SubDep.flags @ ans.flags in
+            { {ans with flags} with requires }
+          with
+              Not_found -> Log.error "Subpackage %s is not found in recipe %s"  depname ans.name
+        ) in
+        ans
       with exn ->
         begin
           close_in ic;

@@ -4,11 +4,11 @@
 %}
 
 %token VERSION
-%token REPOSITORY DEP SUBDEP ENDSUBDEP
+%token REPOSITORY DEP SUBDEP ENDSUBDEP RECIPE
 %token FLAG PATCH REQUIRES INSTALL BUILD
 %token COMMA OSTYPE
 %token IF_MACRO ENDIF_MACRO
-%token LBRA RBRA
+%token LBRA RBRA PLUS
 %token EOF
 %token <string> IDENT
 %token <string> VALUE
@@ -33,17 +33,25 @@ config:
 ;
 
 recipe:
-  | DEP IDENT IDENT VALUE meta_list {($2, $3, $4, $5, [])}
+  | DEP IDENT IDENT VALUE meta_list subdep_list  {($2, $3, $4, $5, $6)}
   | IDENT {Log.error "recipe: invalid keyword %S" $1}
+;
+ident_plus_list:
+  | ident_plus_list IDENT { $1 @ [$2] (* TODO: think how to write cool *) }
+  |                       { []       }
+;
+longident:
+  | IDENT PLUS ident_plus_list { String.concat ~sep:"+" ($1::$3) }
+  | IDENT                      { $1 }
 ;
 subdep_list:
   | subdep_list subdep {$2 :: $1}
   |                    {print_endline "empty subdep list"; []}
 ;
 subdep:
-  | SUBDEP IDENT  meta_list subdep_list ENDSUBDEP {
+  | SUBDEP IDENT  meta_list ENDSUBDEP {
     print_endline "subdep is parsed";
-    Ast.SubDep.({name=$2; metas=$3; reqs=$4})
+    Ast.SubDep.({name=$2; metas=$3; reqs=[]})
   }
   
 meta_list:
@@ -71,7 +79,8 @@ stmt_list:
 
 stmt:
   | REPOSITORY VALUE VALUE {`Repository ($2, $3)}
-  | DEP IDENT IDENT VALUE meta_list subdep_list {`Dep ($2, $3, $4, $5, $6)}
+  | DEP longident RECIPE VALUE meta_list subdep_list {`Dep ($2, "recipe", $4, $5, $6)}
+  | DEP IDENT IDENT  VALUE meta_list subdep_list {`Dep ($2, $3, $4, $5, $6)}
   | IDENT {Log.error "brb.conf: invalid keyword %S" $1}
 ;
 cond:

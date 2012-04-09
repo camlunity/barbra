@@ -1,7 +1,7 @@
 {
   open Parser
 
-  let lst =  [
+  let lst = [
     ("dep",  DEP);
     ("subdep", SUBDEP);
     ("endsubdep", ENDSUBDEP);
@@ -10,6 +10,7 @@
     ("patch", PATCH);
     ("install", INSTALL);
     ("requires", REQUIRES);
+    ("recipe", RECIPE);
     ("repository", REPOSITORY);
     ("version", VERSION);
     ("if", IF_MACRO);
@@ -26,6 +27,7 @@ rule token = parse
   | '\n'             {Lexing.new_line lexbuf; token lexbuf}
   | "\r\n"           {Lexing.new_line lexbuf; token lexbuf}
   | ','              {COMMA}
+  | '+'              {PLUS}
   | '('              {LBRA}
   | ')'              {RBRA}
   | eof              {EOF}
